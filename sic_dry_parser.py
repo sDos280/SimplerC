@@ -5,15 +5,71 @@ any analysis of the ast won't be done here.
 
 """
 
+import typing
+import sic_token as tk
 import sic_lexer as lx
+import sic_node as node
 
 
 class DryParser:
     def __init__(self, lexer: lx.Lexer):
         self.lexer = lexer
+        self.index = 0
+        self.current_token = lexer.tokens[0]
 
-    def peek_primary_expression(self):
-        pass
+    # dry parser util methods
+    def peek_token(self):
+        self.index += 1
+        self.current_token = self.lexer.tokens[self.index]
+
+    def is_token_kind(self, kind: tk.TokenKind | list[tk.TokenKind]) -> bool:
+        if isinstance(kind, list):
+            return self.current_token.kind in kind
+        else:
+            return self.current_token.kind == kind
+
+    @staticmethod
+    def is_node(node_type: typing.Type[node.Node] | list[typing.Type[node.Node]], obj: node.Node) -> bool:
+        return isinstance(node_type, obj)
+
+    def fetal_token(self, error_string: str, token: tk.Token = None):
+        if token is None:
+            raise SyntaxError(error_string + ' ' + f'in {self.current_token.start}')
+        else:
+            raise SyntaxError(error_string + ' ' + f'in {token.start}')
+
+    # dry parser non-grammar peek methods
+
+    # dry parser grammar peek methods
+    def peek_primary_expression(self) -> node.Node:
+        if self.is_token_kind(tk.TokenKind.IDENTIFIER):
+            token: tk.Token = self.current_token
+
+            self.peek_token()  # peek identifier token
+
+            return node.Identifier(token)
+        elif self.is_token_kind([tk.TokenKind.INTEGER_LITERAL, tk.TokenKind.FLOAT_LITERAL]):
+            token: tk.Token = self.current_token
+
+            self.peek_token()  # peek integer/float literal token
+
+            return node.ConstantLiteral(token)
+        elif self.is_token_kind(tk.TokenKind.STRING_LITERAL):
+            token: tk.Token = self.current_token
+
+            self.peek_token()  # peek string literal token
+
+            return node.StringLiteral(token)
+        elif self.is_token_kind(tk.TokenKind.OPENING_PARENTHESIS):
+            self.peek_token()  # peek ( token
+
+            expression: node.Node = self.peek_expression()
+
+            self.peek_token()  # peek ) token
+
+            return expression
+        else:
+            self.fetal_token("primary token expected")
 
     def peek_postfix_expression(self):
         pass
