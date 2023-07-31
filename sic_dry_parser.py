@@ -11,6 +11,7 @@ import sic_lexer as lx
 import sic_node as node
 
 
+
 class DryParser:
     def __init__(self, lexer: lx.Lexer):
         self.lexer = lexer
