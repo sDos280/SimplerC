@@ -19,6 +19,12 @@ class ConstantLiteral:
         self.token = token
 
 
+class CUnaryOp:
+    def __init__(self, kind: CUnaryOpKind, expression: Node):
+        self.kind = kind
+        self.expression = expression
+
+
 class CUnaryOpKind(enum.Enum):
     """"""
     # https://www.scaler.com/topics/pre-increment-and-post-increment-in-c/
