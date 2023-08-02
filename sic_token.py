@@ -8,18 +8,14 @@ class TokenKind(enum.Enum):
 
     # Keywords
     UNSIGNED = enum.auto()  # unsigned
-    STRUCT = enum.auto()  # struct
     SIZEOF = enum.auto()  # sizeof
     SIGNED = enum.auto()  # signed
     RETURN = enum.auto()  # return
     DOUBLE = enum.auto()  # double
     WHILE = enum.auto()  # while
-    UNION = enum.auto()  # union
     SHORT = enum.auto()  # short
     FLOAT = enum.auto()  # float
-    CONST = enum.auto()  # const
     BREAK = enum.auto()  # break
-    ENUM = enum.auto()  # enum
     VOID = enum.auto()  # void
     ELSE = enum.auto()  # else
     CHAR = enum.auto()  # char
@@ -93,18 +89,14 @@ class TokenKind(enum.Enum):
 string_to_keyword: dict[str, TokenKind] = {
     # the token hierarchy is by string length
     "unsigned": TokenKind.UNSIGNED,
-    "struct": TokenKind.STRUCT,
     "sizeof": TokenKind.SIZEOF,
     "signed": TokenKind.SIGNED,
     "return": TokenKind.RETURN,
     "double": TokenKind.DOUBLE,
     "while": TokenKind.WHILE,
-    "union": TokenKind.UNION,
     "short": TokenKind.SHORT,
     "float": TokenKind.FLOAT,
-    "const": TokenKind.CONST,
     "break": TokenKind.BREAK,
-    "enum": TokenKind.ENUM,
     "void": TokenKind.VOID,
     "else": TokenKind.ELSE,
     "char": TokenKind.CHAR,
