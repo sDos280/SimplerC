@@ -25,7 +25,7 @@ unary_expression
 	| INC_OP unary_expression
 	| DEC_OP unary_expression
 	| unary_operator cast_expression
-	| SIZEOF '(' specifier_list ')'
+	| SIZEOF '(' type_name ')'
 	| SIZEOF unary_expression
 	;
 
@@ -38,7 +38,7 @@ unary_operator
 
 cast_expression
 	: unary_expression
-	| '(' specifier_list ')' cast_expression
+	| '(' type_name ')' cast_expression
 	;
 
 multiplicative_expression
@@ -170,6 +170,9 @@ specifier_list
 	| type_specifier
 	;
 
+type_name
+	: specifier_list
+	;
 
 declarator
 	: IDENTIFIER
