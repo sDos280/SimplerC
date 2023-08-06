@@ -11,7 +11,6 @@ import sic_lexer as lx
 import sic_node as node
 
 
-
 class DryParser:
     def __init__(self, lexer: lx.Lexer):
         self.lexer = lexer
@@ -40,15 +39,17 @@ class DryParser:
             raise SyntaxError(error_string + ' ' + f'in {token.start}')
 
     # dry parser non-grammar peek methods
+    def peek_identifier(self) -> node.Identifier:
+        token: tk.Token = self.current_token
+
+        self.peek_token()  # peek identifier token
+
+        return node.Identifier(token)
 
     # dry parser grammar peek methods
     def peek_primary_expression(self) -> node.Node:
         if self.is_token_kind(tk.TokenKind.IDENTIFIER):
-            token: tk.Token = self.current_token
-
-            self.peek_token()  # peek identifier token
-
-            return node.Identifier(token)
+            return self.peek_identifier()
         elif self.is_token_kind([tk.TokenKind.INTEGER_LITERAL, tk.TokenKind.FLOAT_LITERAL]):
             token: tk.Token = self.current_token
 
@@ -73,13 +74,74 @@ class DryParser:
             self.fetal_token("primary token expected")
 
     def peek_postfix_expression(self):
-        pass
+        primary_expression: node.Node = self.peek_primary_expression()
+
+        if self.is_token_kind(tk.TokenKind.OPENING_PARENTHESIS):
+            assert False, "not implemented yet"
+        elif self.is_token_kind(tk.TokenKind.INC_OP):
+            self.peek_token()  # peek ++ token
+
+            return node.CUnaryOp(node.CUnaryOpKind.PostIncrease, primary_expression)
+        elif self.is_token_kind(tk.TokenKind.DEC_OP):
+            self.peek_token()  # peek -- token
+
+            return node.CUnaryOp(node.CUnaryOpKind.PostDecrease, primary_expression)
+        else:
+            return primary_expression
 
     def peek_argument_expression_list(self):
         pass
 
     def peek_unary_expression(self):
-        pass
+        match self.current_token.kind:
+            # INC_OP unary_expression
+            # DEC_OP unary_expression
+            # unary_operator cast_expression
+            # SIZEOF '(' type_name ')'
+            # SIZEOF unary_expression
+
+            case tk.TokenKind.INC_OP:
+                self.peek_token()  # peek ++ token
+
+                unary_expression: node.Node = self.peek_unary_expression()
+
+                return node.CUnaryOp(node.CUnaryOpKind.PreIncrease, unary_expression)
+            case tk.TokenKind.DEC_OP:
+                self.peek_token()  # peek -- token
+
+                unary_expression: node.Node = self.peek_unary_expression()
+
+                return node.CUnaryOp(node.CUnaryOpKind.PreDecrease, unary_expression)
+            case tk.TokenKind.PLUS:
+                self.peek_token()  # peek + token
+
+                cast_expression: node.Node = self.peek_cast_expression()
+
+                return node.CUnaryOp(node.CUnaryOpKind.Plus, cast_expression)
+            case tk.TokenKind.HYPHEN:
+                self.peek_token()  # peek - token
+
+                cast_expression: node.Node = self.peek_cast_expression()
+
+                return node.CUnaryOp(node.CUnaryOpKind.Minus, cast_expression)
+            case tk.TokenKind.TILDE:
+                self.peek_token()  # peek ~ token
+
+                cast_expression: node.Node = self.peek_cast_expression()
+
+                return node.CUnaryOp(node.CUnaryOpKind.BitwiseNOT, cast_expression)
+            case tk.TokenKind.EXCLAMATION:
+                self.peek_token()  # peek ! token
+
+                cast_expression: node.Node = self.peek_cast_expression()
+
+                return node.CUnaryOp(node.CUnaryOpKind.LogicalNOT, cast_expression)
+            case tk.TokenKind.SIZEOF:
+                assert False, "not implemented yet"
+
+        postfix_expression: node.Node = self.peek_postfix_expression()
+
+        return postfix_expression
 
     def peek_unary_operator(self):
         pass
