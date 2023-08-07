@@ -55,5 +55,11 @@ class CUnaryOpKind(enum.Enum):
     Sizeof = enum.auto()  # 'sizeof'
 
 
+class CCast:
+    def __init__(self, type_name: TypeName, expression: Node):
+        self.type_name = type_name
+        self.expression = expression
+
+
 Node = typing.Union[Identifier, StringLiteral, ConstantLiteral]
 TypeName = CPrimaryType
