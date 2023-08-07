@@ -18,6 +18,18 @@ class CPrimaryType(enum.IntEnum):
     DOUBLE = 1 << 20  # 'double'
 
 
+class CTypeSpecifier(enum.Enum):
+    VOID = enum.auto()
+    CHAR = enum.auto()
+    SHORT = enum.auto()
+    INT = enum.auto()
+    LONG = enum.auto()
+    FLOAT = enum.auto()
+    DOUBLE = enum.auto()
+    SIGNED = enum.auto()
+    UNSIGNED = enum.auto()
+
+
 class Identifier:
     def __init__(self, token: tk.Token):
         self.token = token
