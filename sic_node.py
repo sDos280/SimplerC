@@ -4,6 +4,20 @@ import sic_token as tk
 import typing
 
 
+class CPrimaryType(enum.IntEnum):
+    VOID = 1 << 0  # 'void'
+    CHAR = 1 << 2  # 'char' or 'signed char'
+    UCHAR = 1 << 4  # 'unsigned char'
+    SHORT = 1 << 6  # 'short' or 'short int' or 'signed short' or 'signed short int'
+    USHORT = 1 << 8  # 'unsigned short'
+    INT = 1 << 10  # 'int' or 'signed' or 'signed int'
+    UINT = 1 << 12  # 'unsigned' or 'unsigned int'
+    LONG = 1 << 14  # 'long' or 'long int' or 'signed long' or 'signed long int'
+    ULONG = 1 << 16  # 'unsigned long'
+    FLOAT = 1 << 18  # 'float'
+    DOUBLE = 1 << 20  # 'double'
+
+
 class Identifier:
     def __init__(self, token: tk.Token):
         self.token = token
@@ -42,3 +56,4 @@ class CUnaryOpKind(enum.Enum):
 
 
 Node = typing.Union[Identifier, StringLiteral, ConstantLiteral]
+TypeName = CPrimaryType
