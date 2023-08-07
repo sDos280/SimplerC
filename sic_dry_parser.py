@@ -28,6 +28,19 @@ class DryParser:
         else:
             return self.current_token.kind == kind
 
+    def is_token_type_name(self) -> bool:
+        return self.is_token_kind([
+            tk.TokenKind.VOID,
+            tk.TokenKind.CHAR,
+            tk.TokenKind.SHORT,
+            tk.TokenKind.INT,
+            tk.TokenKind.LONG,
+            tk.TokenKind.FLOAT,
+            tk.TokenKind.DOUBLE,
+            tk.TokenKind.SIGNED,
+            tk.TokenKind.UNSIGNED
+        ])
+
     @staticmethod
     def is_node(node_type: typing.Type[node.Node] | list[typing.Type[node.Node]], obj: node.Node) -> bool:
         return isinstance(node_type, obj)
@@ -112,39 +125,34 @@ class DryParser:
                 unary_expression: node.Node = self.peek_unary_expression()
 
                 return node.CUnaryOp(node.CUnaryOpKind.PreDecrease, unary_expression)
+            case tk.TokenKind.SIZEOF:
+                assert False, "not implemented yet"
+            case _:
+                try:
+                    unary_operator: node.CUnaryOpKind = self.peek_unary_operator()
+                except SyntaxError:
+                    return self.peek_postfix_expression()
+
+    def peek_unary_operator(self):
+        match self.current_token.kind:
             case tk.TokenKind.PLUS:
                 self.peek_token()  # peek + token
 
-                cast_expression: node.Node = self.peek_cast_expression()
-
-                return node.CUnaryOp(node.CUnaryOpKind.Plus, cast_expression)
+                return node.CUnaryOpKind.Plus
             case tk.TokenKind.HYPHEN:
                 self.peek_token()  # peek - token
 
-                cast_expression: node.Node = self.peek_cast_expression()
-
-                return node.CUnaryOp(node.CUnaryOpKind.Minus, cast_expression)
+                return node.CUnaryOpKind.Minus
             case tk.TokenKind.TILDE:
                 self.peek_token()  # peek ~ token
 
-                cast_expression: node.Node = self.peek_cast_expression()
-
-                return node.CUnaryOp(node.CUnaryOpKind.BitwiseNOT, cast_expression)
+                return node.CUnaryOpKind.BitwiseNOT
             case tk.TokenKind.EXCLAMATION:
                 self.peek_token()  # peek ! token
 
-                cast_expression: node.Node = self.peek_cast_expression()
+                return node.CUnaryOpKind.LogicalNOT
 
-                return node.CUnaryOp(node.CUnaryOpKind.LogicalNOT, cast_expression)
-            case tk.TokenKind.SIZEOF:
-                assert False, "not implemented yet"
-
-        postfix_expression: node.Node = self.peek_postfix_expression()
-
-        return postfix_expression
-
-    def peek_unary_operator(self):
-        pass
+        self.fetal_token("unary operator expected")
 
     def peek_cast_expression(self):
         pass
