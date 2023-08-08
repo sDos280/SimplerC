@@ -231,7 +231,23 @@ class DryParser:
                 return cast_expression
 
     def peek_additive_expression(self):
-        pass
+        multiplicative_expression: node.Node = self.peek_multiplicative_expression()
+
+        while True:
+            if self.is_token_kind(tk.TokenKind.PLUS):
+                self.peek_token()  # peek + token
+
+                sub_multiplicative_expression: node.Node = self.peek_multiplicative_expression()
+
+                multiplicative_expression = node.CBinaryOp(node.CBinaryOpKind.Addition, multiplicative_expression, sub_multiplicative_expression)
+            elif self.is_token_kind(tk.TokenKind.HYPHEN):
+                self.peek_token()  # peek - token
+
+                sub_multiplicative_expression: node.Node = self.peek_multiplicative_expression()
+
+                multiplicative_expression = node.CBinaryOp(node.CBinaryOpKind.Subtraction, multiplicative_expression, sub_multiplicative_expression)
+            else:
+                return multiplicative_expression
 
     def peek_shift_expression(self):
         pass
