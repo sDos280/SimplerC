@@ -348,8 +348,17 @@ class DryParser:
 
         return and_expression
 
-    def peek_inclusive_or_expression(self):
-        pass
+    def peek_inclusive_or_expression(self) -> node.Node:
+        exclusive_or_expression: node.Node = self.peek_exclusive_or_expression()
+
+        while self.is_token_kind(tk.TokenKind.VERTICAL_BAR):
+            self.peek_token()  # peek the | token
+
+            sub_exclusive_or_expression: node.Node = self.peek_exclusive_or_expression()
+
+            exclusive_or_expression = node.CBinaryOp(node.CBinaryOpKind.BitwiseOR, exclusive_or_expression, sub_exclusive_or_expression)
+
+        return exclusive_or_expression
 
     def peek_logical_and_expression(self):
         pass
