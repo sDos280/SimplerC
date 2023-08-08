@@ -142,5 +142,5 @@ class CBinaryOp:
         self.right: Node = right
 
 
-Node = typing.Union[Identifier, StringLiteral, ConstantLiteral]
+Node = typing.Union[Identifier, StringLiteral, ConstantLiteral, CUnaryOp, CCast, CBinaryOp]
 TypeName = CPrimaryType
