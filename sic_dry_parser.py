@@ -33,6 +33,10 @@ class DryParser:
         else:
             return self.current_token.kind == kind
 
+    def expect_token_kind(self, kind: tk.TokenKind | list[tk.TokenKind], error_string: str = "", token: tk.Token | None = None):
+        if not self.is_token_kind(kind):
+            self.fetal_token(error_string, token)
+
     def is_token_type_name(self) -> bool:
         return self.is_token_kind([
             tk.TokenKind.VOID,
