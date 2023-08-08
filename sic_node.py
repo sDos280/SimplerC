@@ -18,7 +18,7 @@ class CPrimaryType(enum.Enum):
     DOUBLE = enum.auto()  # 'double'
 
 
-class CTypeSpecifier(enum.IntEnum):
+class CTypeSpecifier(enum.IntFlag):
     VOID = 1 << 0
     CHAR = 1 << 2
     SHORT = 1 << 4
