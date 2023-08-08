@@ -4,30 +4,30 @@ import sic_token as tk
 import typing
 
 
-class CPrimaryType(enum.IntEnum):
-    VOID = 1 << 0  # 'void'
-    CHAR = 1 << 2  # 'char' or 'signed char'
-    UCHAR = 1 << 4  # 'unsigned char'
-    SHORT = 1 << 6  # 'short' or 'short int' or 'signed short' or 'signed short int'
-    USHORT = 1 << 8  # 'unsigned short'
-    INT = 1 << 10  # 'int' or 'signed' or 'signed int'
-    UINT = 1 << 12  # 'unsigned' or 'unsigned int'
-    LONG = 1 << 14  # 'long' or 'long int' or 'signed long' or 'signed long int'
-    ULONG = 1 << 16  # 'unsigned long'
-    FLOAT = 1 << 18  # 'float'
-    DOUBLE = 1 << 20  # 'double'
+class CPrimaryType(enum.Enum):
+    VOID = enum.auto()  # 'void'
+    CHAR = enum.auto()  # 'char' or 'signed char'
+    UCHAR = enum.auto()  # 'unsigned char'
+    SHORT = enum.auto()  # 'short' or 'short int' or 'signed short' or 'signed short int'
+    USHORT = enum.auto()  # 'unsigned short'
+    INT = enum.auto()  # 'int' or 'signed' or 'signed int'
+    UINT = enum.auto()  # 'unsigned' or 'unsigned int'
+    LONG = enum.auto()  # 'long' or 'long int' or 'signed long' or 'signed long int'
+    ULONG = enum.auto()  # 'unsigned long'
+    FLOAT = enum.auto()  # 'float'
+    DOUBLE = enum.auto()  # 'double'
 
 
-class CTypeSpecifier(enum.Enum):
-    VOID = enum.auto()
-    CHAR = enum.auto()
-    SHORT = enum.auto()
-    INT = enum.auto()
-    LONG = enum.auto()
-    FLOAT = enum.auto()
-    DOUBLE = enum.auto()
-    SIGNED = enum.auto()
-    UNSIGNED = enum.auto()
+class CTypeSpecifier(enum.IntEnum):
+    VOID = 1 << 0
+    CHAR = 1 << 2
+    SHORT = 1 << 4
+    INT = 1 << 6
+    LONG = 1 << 8
+    FLOAT = 1 << 10
+    DOUBLE = 1 << 12
+    SIGNED = 1 << 14
+    UNSIGNED = 1 << 16
 
 
 class Identifier:
