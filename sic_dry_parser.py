@@ -206,7 +206,29 @@ class DryParser:
         return unary_expression
 
     def peek_multiplicative_expression(self):
-        pass
+        cast_expression: node.Node = self.peek_cast_expression()
+
+        while True:
+            if self.is_token_kind(tk.TokenKind.ASTERISK):
+                self.peek_token()  # peek * token
+
+                sub_cast_expression: node.Node = self.peek_cast_expression()
+
+                cast_expression = node.CBinaryOp(node.CBinaryOpKind.Multiplication, cast_expression, sub_cast_expression)
+            elif self.is_token_kind(tk.TokenKind.SLASH):
+                self.peek_token()  # peek / token
+
+                sub_cast_expression: node.Node = self.peek_cast_expression()
+
+                cast_expression = node.CBinaryOp(node.CBinaryOpKind.Division, cast_expression, sub_cast_expression)
+            elif self.is_token_kind(tk.TokenKind.PERCENTAGE):
+                self.peek_token()  # peek % token
+
+                sub_cast_expression: node.Node = self.peek_cast_expression()
+
+                cast_expression = node.CBinaryOp(node.CBinaryOpKind.Modulus, cast_expression, sub_cast_expression)
+            else:
+                return cast_expression
 
     def peek_additive_expression(self):
         pass
