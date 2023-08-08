@@ -21,7 +21,6 @@ class TokenKind(enum.Enum):
     CHAR = enum.auto()  # char
     LONG = enum.auto()  # long
     FUNC = enum.auto()  # func
-    TYPE = enum.auto()  # type
     INT = enum.auto()  # int
     FOR = enum.auto()  # for
     IF = enum.auto()  # if
@@ -102,7 +101,6 @@ string_to_keyword: dict[str, TokenKind] = {
     "char": TokenKind.CHAR,
     "long": TokenKind.LONG,
     "func": TokenKind.FUNC,
-    "type": TokenKind.TYPE,
     "int": TokenKind.INT,
     "for": TokenKind.FOR,
     "if": TokenKind.IF,

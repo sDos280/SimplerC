@@ -133,8 +133,7 @@ constant_expression
 	;
 
 declaration
-	: TYPE declaration_specifiers ';'
-	| DEC declaration_specifiers init_declarator_list ';'
+	:  declaration_specifiers init_declarator_list ';'
 	;
 
 declaration_specifiers
