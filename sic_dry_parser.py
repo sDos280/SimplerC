@@ -360,8 +360,18 @@ class DryParser:
 
         return exclusive_or_expression
 
-    def peek_logical_and_expression(self):
-        pass
+    def peek_logical_and_expression(self) -> node.Node:
+        inclusive_or_expression: node.Node = self.peek_inclusive_or_expression()
+
+        while True:
+            if self.is_token_kind(tk.TokenKind.AND_OP):
+                self.peek_token()  # peek the && token
+
+                sub_inclusive_or_expression: node.Node = self.peek_inclusive_or_expression()
+
+                inclusive_or_expression = node.CBinaryOp(node.CBinaryOpKind.LogicalAND, inclusive_or_expression, sub_inclusive_or_expression)
+            else:
+                return inclusive_or_expression
 
     def peek_logical_or_expression(self):
         pass
