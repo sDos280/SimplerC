@@ -30,6 +30,36 @@ class CTypeSpecifier(enum.IntEnum):
     UNSIGNED = 1 << 16
 
 
+c_type_specifier_counter_to_c_primary_type: dict[CTypeSpecifier, CPrimaryType] = {
+    CTypeSpecifier.VOID: CPrimaryType.VOID,
+
+    CTypeSpecifier.CHAR: CPrimaryType.CHAR,
+    CTypeSpecifier.CHAR + CTypeSpecifier.SIGNED: CPrimaryType.CHAR,
+    CTypeSpecifier.CHAR + CTypeSpecifier.UNSIGNED: CPrimaryType.UCHAR,
+
+    CTypeSpecifier.SHORT: CPrimaryType.SHORT,
+    CTypeSpecifier.SHORT + CTypeSpecifier.INT: CPrimaryType.SHORT,
+    CTypeSpecifier.SIGNED + CTypeSpecifier.SHORT: CPrimaryType.SHORT,
+    CTypeSpecifier.SHORT + CTypeSpecifier.INT + CTypeSpecifier.SIGNED: CPrimaryType.SHORT,
+    CTypeSpecifier.UNSIGNED + CTypeSpecifier.SHORT: CPrimaryType.USHORT,
+
+    CTypeSpecifier.INT: CPrimaryType.INT,
+    CTypeSpecifier.SIGNED: CPrimaryType.INT,
+    CTypeSpecifier.SIGNED + CTypeSpecifier.INT: CPrimaryType.INT,
+    CTypeSpecifier.UNSIGNED: CPrimaryType.UINT,
+    CTypeSpecifier.UNSIGNED + CTypeSpecifier.INT: CPrimaryType.UINT,
+
+    CTypeSpecifier.LONG: CPrimaryType.LONG,
+    CTypeSpecifier.LONG + CTypeSpecifier.INT: CPrimaryType.LONG,
+    CTypeSpecifier.SIGNED + CTypeSpecifier.LONG: CPrimaryType.LONG,
+    CTypeSpecifier.SIGNED + CTypeSpecifier.LONG + CTypeSpecifier.INT: CPrimaryType.LONG,
+    CTypeSpecifier.UNSIGNED + CTypeSpecifier.LONG: CPrimaryType.ULONG,
+
+    CTypeSpecifier.FLOAT: CPrimaryType.FLOAT,
+    CTypeSpecifier.DOUBLE: CPrimaryType.DOUBLE,
+}
+
+
 class Identifier:
     def __init__(self, token: tk.Token):
         self.token = token
