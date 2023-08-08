@@ -250,7 +250,23 @@ class DryParser:
                 return multiplicative_expression
 
     def peek_shift_expression(self):
-        pass
+        additive_expression: node.Node = self.peek_additive_expression()
+
+        while True:
+            if self.is_token_kind(tk.TokenKind.LEFT_OP):
+                self.peek_token()  # peek << token
+
+                sub_additive_expression: node.Node = self.peek_additive_expression()
+
+                additive_expression = node.CBinaryOp(node.CBinaryOpKind.LeftShift, additive_expression, sub_additive_expression)
+            elif self.is_token_kind(tk.TokenKind.RIGHT_OP):
+                self.peek_token()  # peek >> token
+
+                sub_additive_expression: node.Node = self.peek_additive_expression()
+
+                additive_expression = node.CBinaryOp(node.CBinaryOpKind.RightShift, additive_expression, sub_additive_expression)
+            else:
+                return additive_expression
 
     def peek_relational_expression(self):
         pass
