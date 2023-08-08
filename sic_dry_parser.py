@@ -97,7 +97,7 @@ class DryParser:
         else:
             self.fetal_token("primary token expected")
 
-    def peek_postfix_expression(self):
+    def peek_postfix_expression(self) -> node.Node:
         primary_expression: node.Node = self.peek_primary_expression()
 
         if self.is_token_kind(tk.TokenKind.OPENING_PARENTHESIS):
@@ -116,7 +116,7 @@ class DryParser:
     def peek_argument_expression_list(self):
         pass
 
-    def peek_unary_expression(self):
+    def peek_unary_expression(self) -> node.Node:
         match self.current_token.kind:
             # INC_OP unary_expression
             # DEC_OP unary_expression
@@ -165,7 +165,7 @@ class DryParser:
 
         return self.peek_postfix_expression()
 
-    def peek_unary_operator(self):
+    def peek_unary_operator(self) -> node.CUnaryOpKind:
         match self.current_token.kind:
             case tk.TokenKind.PLUS:
                 self.peek_token()  # peek + token
@@ -186,7 +186,7 @@ class DryParser:
 
         self.fetal_token("unary operator expected")
 
-    def peek_cast_expression(self):
+    def peek_cast_expression(self) -> node.Node:
         if self.is_token_kind(tk.TokenKind.OPENING_PARENTHESIS):
             self.peek_token()  # peek ( token
 
@@ -205,7 +205,7 @@ class DryParser:
 
         return unary_expression
 
-    def peek_multiplicative_expression(self):
+    def peek_multiplicative_expression(self) -> node.Node:
         cast_expression: node.Node = self.peek_cast_expression()
 
         while True:
@@ -230,7 +230,7 @@ class DryParser:
             else:
                 return cast_expression
 
-    def peek_additive_expression(self):
+    def peek_additive_expression(self) -> node.Node:
         multiplicative_expression: node.Node = self.peek_multiplicative_expression()
 
         while True:
@@ -249,7 +249,7 @@ class DryParser:
             else:
                 return multiplicative_expression
 
-    def peek_shift_expression(self):
+    def peek_shift_expression(self) -> node.Node:
         additive_expression: node.Node = self.peek_additive_expression()
 
         while True:
@@ -268,7 +268,7 @@ class DryParser:
             else:
                 return additive_expression
 
-    def peek_relational_expression(self):
+    def peek_relational_expression(self) -> node.Node:
         shift_expression: node.Node = self.peek_shift_expression()
 
         while True:
