@@ -275,7 +275,7 @@ class DryParser:
             if self.is_token_kind(tk.TokenKind.LESS_THAN):
                 self.peek_token()  # peek the < token
 
-                sub_shift_expression: Node = self.peek_shift_expression()
+                sub_shift_expression: node.Node = self.peek_shift_expression()
 
                 shift_expression = node.CBinaryOp(node.CBinaryOpKind.LessThan, shift_expression, sub_shift_expression)
 
