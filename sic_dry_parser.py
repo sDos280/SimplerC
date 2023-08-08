@@ -303,9 +303,26 @@ class DryParser:
             else:
                 return shift_expression
 
+    def peek_equality_expression(self) -> node.Node:
+        relational_expression: node.Node = self.peek_relational_expression()
 
-    def peek_equality_expression(self):
-        pass
+        while True:
+            if self.is_token_kind(tk.TokenKind.EQ_OP):
+                self.peek_token()  # peek the == token
+
+                sub_relational_expression: node.Node = self.peek_relational_expression()
+
+                relational_expression = node.CBinaryOp(node.CBinaryOpKind.EqualTo, relational_expression, sub_relational_expression)
+
+            elif self.is_token_kind(tk.TokenKind.NE_OP):
+                self.peek_token()  # peek the != token
+
+                sub_relational_expression: node.Node = self.peek_relational_expression()
+
+                relational_expression = node.CBinaryOp(node.CBinaryOpKind.NotEqualTo, relational_expression, sub_relational_expression)
+
+            else:
+                return relational_expression
 
     def peek_and_expression(self):
         pass
