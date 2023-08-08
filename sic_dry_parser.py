@@ -324,8 +324,17 @@ class DryParser:
             else:
                 return relational_expression
 
-    def peek_and_expression(self):
-        pass
+    def peek_and_expression(self) -> node.Node:
+        equality_expression: node.Node = self.peek_equality_expression()
+
+        while self.is_token_kind(tk.TokenKind.AMPERSAND):
+            self.peek_token()  # peek the & token
+
+            sub_equality_expression: node.Node = self.peek_equality_expression()
+
+            equality_expression = node.CBinaryOp(node.CBinaryOpKind.BitwiseAND, equality_expression, sub_equality_expression)
+
+        return equality_expression
 
     def peek_exclusive_or_expression(self):
         pass
