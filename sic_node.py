@@ -103,5 +103,44 @@ class CCast:
         self.expression = expression
 
 
+class CBinaryOpKind(enum.Enum):
+    Addition = enum.auto()
+    Subtraction = enum.auto()
+    Multiplication = enum.auto()
+    Division = enum.auto()
+    Modulus = enum.auto()
+    Assignment = enum.auto()
+    EqualTo = enum.auto()
+    NotEqualTo = enum.auto()
+    GreaterThan = enum.auto()
+    LessThan = enum.auto()
+    GreaterThanOrEqualTo = enum.auto()
+    LessThanOrEqualTo = enum.auto()
+    BitwiseAND = enum.auto()
+    BitwiseOR = enum.auto()
+    BitwiseXOR = enum.auto()
+    LeftShift = enum.auto()
+    RightShift = enum.auto()
+    LogicalAND = enum.auto()
+    LogicalOR = enum.auto()
+    MultiplicationAssignment = enum.auto()
+    DivisionAssignment = enum.auto()
+    ModulusAssignment = enum.auto()
+    AdditionAssignment = enum.auto()
+    SubtractionAssignment = enum.auto()
+    LeftShiftAssignment = enum.auto()
+    RightShiftAssignment = enum.auto()
+    BitwiseAndAssignment = enum.auto()
+    BitwiseXorAssignment = enum.auto()
+    BitwiseOrAssignment = enum.auto()
+
+
+class CBinaryOp:
+    def __init__(self, kind: CBinaryOpKind, left: Node, right: Node):
+        self.kind: CBinaryOpKind = kind
+        self.left: Node = left
+        self.right: Node = right
+
+
 Node = typing.Union[Identifier, StringLiteral, ConstantLiteral]
 TypeName = CPrimaryType
