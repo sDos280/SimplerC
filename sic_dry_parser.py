@@ -35,7 +35,7 @@ class DryParser:
 
     def expect_token_kind(self, kind: tk.TokenKind | list[tk.TokenKind], error_string: str = "", token: tk.Token | None = None):
         if not self.is_token_kind(kind):
-            self.fetal_token(error_string, token)
+            self.fatal_token(error_string, token)
 
     def is_token_type_name(self) -> bool:
         return self.is_token_kind([
@@ -53,11 +53,24 @@ class DryParser:
     def is_token_type_specifier(self) -> bool:
         return self.is_token_type_name()
 
+    def is_assignment_operator(self) -> bool:
+        return self.is_token_kind([tk.TokenKind.EQUALS,
+                                   tk.TokenKind.MUL_ASSIGN,
+                                   tk.TokenKind.DIV_ASSIGN,
+                                   tk.TokenKind.MOD_ASSIGN,
+                                   tk.TokenKind.ADD_ASSIGN,
+                                   tk.TokenKind.SUB_ASSIGN,
+                                   tk.TokenKind.LEFT_ASSIGN,
+                                   tk.TokenKind.RIGHT_ASSIGN,
+                                   tk.TokenKind.AND_ASSIGN,
+                                   tk.TokenKind.XOR_ASSIGN,
+                                   tk.TokenKind.OR_ASSIGN])
+
     @staticmethod
     def is_node(node_type: typing.Type[node.Node] | list[typing.Type[node.Node]], obj: node.Node) -> bool:
         return isinstance(node_type, obj)
 
-    def fetal_token(self, error_string: str, token: tk.Token = None):
+    def fatal_token(self, error_string: str, token: tk.Token = None):
         fetal_token: tk.Token = token if token is not None else self.current_token
         line_index: int = utils.get_line_index_by_char_index(self.lexer.string, fetal_token.start)
         line_string: str = utils.get_line_by_index(self.lexer.string, line_index)
@@ -73,6 +86,43 @@ class DryParser:
         self.peek_token()  # peek identifier token
 
         return node.Identifier(token)
+
+    def peek_binary_assignment_operator(self) -> node.CBinaryOpKind:
+        if self.is_token_kind(tk.TokenKind.EQUALS):
+            self.peek_token()  # peek the = token
+            return node.CBinaryOpKind.Assignment
+        elif self.is_token_kind(tk.TokenKind.MUL_ASSIGN):
+            self.peek_token()  # peek the *= token
+            return node.CBinaryOpKind.MultiplicationAssignment
+        elif self.is_token_kind(tk.TokenKind.DIV_ASSIGN):
+            self.peek_token()  # peek the /= token
+            return node.CBinaryOpKind.DivisionAssignment
+        elif self.is_token_kind(tk.TokenKind.MOD_ASSIGN):
+            self.peek_token()  # peek the %= token
+            return node.CBinaryOpKind.ModulusAssignment
+        elif self.is_token_kind(tk.TokenKind.ADD_ASSIGN):
+            self.peek_token()  # peek the += token
+            return node.CBinaryOpKind.AdditionAssignment
+        elif self.is_token_kind(tk.TokenKind.SUB_ASSIGN):
+            self.peek_token()  # peek the -= token
+            return node.CBinaryOpKind.SubtractionAssignment
+        elif self.is_token_kind(tk.TokenKind.LEFT_ASSIGN):
+            self.peek_token()  # peek the <<= token
+            return node.CBinaryOpKind.LeftShiftAssignment
+        elif self.is_token_kind(tk.TokenKind.RIGHT_ASSIGN):
+            self.peek_token()  # peek the >>= token
+            return node.CBinaryOpKind.RightShiftAssignment
+        elif self.is_token_kind(tk.TokenKind.AND_ASSIGN):
+            self.peek_token()  # peek the &= token
+            return node.CBinaryOpKind.BitwiseAndAssignment
+        elif self.is_token_kind(tk.TokenKind.XOR_ASSIGN):
+            self.peek_token()  # peek the ^= token
+            return node.CBinaryOpKind.BitwiseXorAssignment
+        elif self.is_token_kind(tk.TokenKind.OR_ASSIGN):
+            self.peek_token()  # peek the |= token
+            return node.CBinaryOpKind.BitwiseOrAssignment
+        else:
+            self.fatal_token("Expected assignment operator token")
 
     # dry parser grammar peek methods
     def peek_primary_expression(self) -> node.Node:
@@ -99,7 +149,7 @@ class DryParser:
 
             return expression
         else:
-            self.fetal_token("primary token expected")
+            self.fatal_token("primary token expected")
 
     def peek_postfix_expression(self) -> node.Node:
         primary_expression: node.Node = self.peek_primary_expression()
@@ -188,7 +238,7 @@ class DryParser:
 
                 return node.CUnaryOpKind.LogicalNOT
 
-        self.fetal_token("unary operator expected")
+        self.fatal_token("unary operator expected")
 
     def peek_cast_expression(self) -> node.Node:
         if self.is_token_kind(tk.TokenKind.OPENING_PARENTHESIS):
@@ -389,11 +439,35 @@ class DryParser:
 
         return logical_and_expression
 
-    def peek_conditional_expression(self):
-        pass
+    def peek_conditional_expression(self) -> node.Node:
+        logical_or_expression: node.Node = self.peek_logical_or_expression()
 
-    def peek_assignment_expression(self):
-        pass
+        if self.is_token_kind(tk.TokenKind.QUESTION_MARK):
+            self.peek_token()  # peek the ? token
+
+            expression: node.Node = self.peek_expression()
+
+            self.expect_token_kind(tk.TokenKind.COLON, "Expected ':' in conditional expression")
+
+            self.peek_token()  # peek the : token
+
+            conditional_expression: node.Node = self.peek_conditional_expression()
+
+            return node.CTernaryOp(logical_or_expression, expression, conditional_expression)
+
+        return logical_or_expression
+
+    def peek_assignment_expression(self) -> node.Node:
+        conditional_expression: node.Node = self.peek_conditional_expression()
+
+        if self.is_assignment_operator():
+            binary_assignment_op: node.CBinaryOpKind = self.peek_binary_assignment_op()  # peek assignment operator token
+
+            sub_assignment_expression: node.Node = self.peek_assignment_expression()
+
+            return node.CBinaryOp(binary_assignment_op, conditional_expression, sub_assignment_expression)
+        else:
+            return conditional_expression
 
     def peek_assignment_operator(self):
         pass
@@ -526,10 +600,10 @@ class DryParser:
             c_primary_type = node.c_type_specifier_counter_to_c_primary_type.get(specifier_counter)
 
             if c_primary_type is None:
-                self.fetal_token("invalid type specifier")
+                self.fatal_token("invalid type specifier")
 
         if specifier_counter == 0:
-            self.fetal_token("type specifier expected")
+            self.fatal_token("type specifier expected")
 
         return c_primary_type
 
