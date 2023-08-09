@@ -461,7 +461,7 @@ class DryParser:
         conditional_expression: node.Node = self.peek_conditional_expression()
 
         if self.is_assignment_operator():
-            binary_assignment_op: node.CBinaryOpKind = self.peek_binary_assignment_op()  # peek assignment operator token
+            binary_assignment_op: node.CBinaryOpKind = self.peek_binary_assignment_operator()  # peek assignment operator token
 
             sub_assignment_expression: node.Node = self.peek_assignment_expression()
 
