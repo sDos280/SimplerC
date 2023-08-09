@@ -142,5 +142,12 @@ class CBinaryOp:
         self.right: Node = right
 
 
-Node = typing.Union[Identifier, StringLiteral, ConstantLiteral, CUnaryOp, CCast, CBinaryOp]
+class CTernaryOp:
+    def __init__(self, condition: Node, true_value: Node, false_value: Node):
+        self.condition: Node = condition
+        self.true_value: Node = true_value
+        self.false_value: Node = false_value
+
+
+Node = typing.Union[Identifier, StringLiteral, ConstantLiteral, CUnaryOp, CCast, CBinaryOp, CTernaryOp]
 TypeName = CPrimaryType
