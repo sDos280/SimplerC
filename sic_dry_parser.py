@@ -625,11 +625,8 @@ class DryParser:
     def peek_direct_abstract_declarator(self):
         pass
 
-    def peek_initializer(self):
+    def peek_initializer(self) -> node.Node:
         return self.peek_assignment_expression()
-
-    def peek_initializer_list(self):
-        pass
 
     def peek_statement(self):
         pass
