@@ -477,8 +477,14 @@ class DryParser:
     def peek_constant_expression(self) -> node.Node:
         return self.peek_conditional_expression()
 
-    def peek_declaration(self):
+    def peek_declaration(self) -> node.Declaration:
         declaration_specifiers: node.TypeName = self.peek_declaration_specifiers()
+        init_declarator_list: list[node.Declarator] = self.peek_init_declarator_list()
+
+        self.expect_token_kind(tk.TokenKind.SEMICOLON, "Expected ';' in declaration")
+        self.peek_token()  # peek the ; token
+
+        return node.Declaration(declaration_specifiers, init_declarator_list)
 
     def peek_declaration_specifiers(self) -> node.TypeName:
         return self.peek_specifier_list()
@@ -493,7 +499,7 @@ class DryParser:
 
         return init_declarator_list
 
-    def peek_init_declarator(self):
+    def peek_init_declarator(self) -> node.Declarator:
         self.expect_token_kind(tk.TokenKind.IDENTIFIER, "Expected identifier in declaration")
         token: tk.Token = self.current_token
 
