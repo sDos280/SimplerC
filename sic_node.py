@@ -159,5 +159,12 @@ class Expression:
         self.expressions = sub_expression
 
 
+class Declaration:
+    def __init__(self, type_name: TypeName, declarators: list[Declarator]):
+        self.type_name = type_name
+        self.declarators = declarators
+
+
 Node = typing.Union[NoneNode, Identifier, CharLiteral, ConstantLiteral, CUnaryOp, CCast, CBinaryOp, CTernaryOp, Expression]
+Declarator = typing.Union[typing.Tuple[Identifier, Node]]
 TypeName = CPrimaryType
