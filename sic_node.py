@@ -159,5 +159,5 @@ class Expression:
         self.expressions = sub_expression
 
 
-Node = typing.Union[Identifier, CharLiteral, ConstantLiteral, CUnaryOp, CCast, CBinaryOp, CTernaryOp, Expression]
+Node = typing.Union[NoneNode, Identifier, CharLiteral, ConstantLiteral, CUnaryOp, CCast, CBinaryOp, CTernaryOp, Expression]
 TypeName = CPrimaryType
