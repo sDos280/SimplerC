@@ -474,8 +474,8 @@ class DryParser:
 
         return expression
 
-    def peek_constant_expression(self):
-        pass
+    def peek_constant_expression(self) -> node.Node:
+        return self.peek_conditional_expression()
 
     def peek_declaration(self):
         pass
