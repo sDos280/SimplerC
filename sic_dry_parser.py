@@ -480,8 +480,8 @@ class DryParser:
     def peek_declaration(self):
         declaration_specifiers: node.TypeName = self.peek_declaration_specifiers()
 
-    def peek_declaration_specifiers(self):
-        pass
+    def peek_declaration_specifiers(self) -> node.TypeName:
+        return self.peek_specifier_list()
 
     def peek_init_declarator_list(self) -> list[node.Declarator]:
         init_declarator_list: list[node.Declarator] = [self.peek_init_declarator()]
