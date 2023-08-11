@@ -513,7 +513,7 @@ class DryParser:
 
             initializer: node.Node = self.peek_initializer()
 
-        return node.Declarator(identifier, initializer)
+        return identifier, initializer
 
     def peek_type_specifier(self) -> node.CTypeSpecifier:
         match self.current_token.kind:
