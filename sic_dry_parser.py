@@ -487,7 +487,20 @@ class DryParser:
         pass
 
     def peek_init_declarator(self):
-        pass
+        self.expect_token_kind(tk.TokenKind.IDENTIFIER, "Expected identifier in declaration")
+        token: tk.Token = self.current_token
+
+        self.peek_token()  # peek identifier token
+
+        identifier: node.Identifier = node.Identifier(token)
+        initializer: node.Node = node.NoneNode()
+
+        if self.is_token_kind(tk.TokenKind.EQUALS):
+            self.peek_token()  # peek the = token
+
+            initializer: node.Node = self.peek_initializer()
+
+        return node.Declarator(identifier, initializer)
 
     def peek_type_specifier(self) -> node.CTypeSpecifier:
         match self.current_token.kind:
