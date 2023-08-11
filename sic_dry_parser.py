@@ -82,43 +82,6 @@ class DryParser:
 
         return node.Identifier(token)
 
-    def peek_binary_assignment_operator(self) -> node.CBinaryOpKind:
-        if self.is_token_kind(tk.TokenKind.EQUALS):
-            self.peek_token()  # peek the = token
-            return node.CBinaryOpKind.Assignment
-        elif self.is_token_kind(tk.TokenKind.MUL_ASSIGN):
-            self.peek_token()  # peek the *= token
-            return node.CBinaryOpKind.MultiplicationAssignment
-        elif self.is_token_kind(tk.TokenKind.DIV_ASSIGN):
-            self.peek_token()  # peek the /= token
-            return node.CBinaryOpKind.DivisionAssignment
-        elif self.is_token_kind(tk.TokenKind.MOD_ASSIGN):
-            self.peek_token()  # peek the %= token
-            return node.CBinaryOpKind.ModulusAssignment
-        elif self.is_token_kind(tk.TokenKind.ADD_ASSIGN):
-            self.peek_token()  # peek the += token
-            return node.CBinaryOpKind.AdditionAssignment
-        elif self.is_token_kind(tk.TokenKind.SUB_ASSIGN):
-            self.peek_token()  # peek the -= token
-            return node.CBinaryOpKind.SubtractionAssignment
-        elif self.is_token_kind(tk.TokenKind.LEFT_ASSIGN):
-            self.peek_token()  # peek the <<= token
-            return node.CBinaryOpKind.LeftShiftAssignment
-        elif self.is_token_kind(tk.TokenKind.RIGHT_ASSIGN):
-            self.peek_token()  # peek the >>= token
-            return node.CBinaryOpKind.RightShiftAssignment
-        elif self.is_token_kind(tk.TokenKind.AND_ASSIGN):
-            self.peek_token()  # peek the &= token
-            return node.CBinaryOpKind.BitwiseAndAssignment
-        elif self.is_token_kind(tk.TokenKind.XOR_ASSIGN):
-            self.peek_token()  # peek the ^= token
-            return node.CBinaryOpKind.BitwiseXorAssignment
-        elif self.is_token_kind(tk.TokenKind.OR_ASSIGN):
-            self.peek_token()  # peek the |= token
-            return node.CBinaryOpKind.BitwiseOrAssignment
-        else:
-            self.fatal_token("Expected assignment operator token")
-
     def peek_assignment_operator(self) -> node.CBinaryOpKind:
         if self.is_token_kind(tk.TokenKind.EQUALS):
             self.peek_token()  # peek the = token
