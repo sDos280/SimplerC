@@ -483,8 +483,15 @@ class DryParser:
     def peek_declaration_specifiers(self):
         pass
 
-    def peek_init_declarator_list(self):
-        pass
+    def peek_init_declarator_list(self) -> list[node.Declarator]:
+        init_declarator_list: list[node.Declarator] = [self.peek_init_declarator()]
+
+        while self.is_token_kind(tk.TokenKind.COMMA):
+            self.peek_token()  # peek the , token
+
+            init_declarator_list.append(self.peek_init_declarator())
+
+        return init_declarator_list
 
     def peek_init_declarator(self):
         self.expect_token_kind(tk.TokenKind.IDENTIFIER, "Expected identifier in declaration")
