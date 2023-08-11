@@ -197,11 +197,6 @@ initializer
 	: assignment_expression
 	;
 
-initializer_list
-	: initializer
-	| initializer_list ',' initializer
-	;
-
 statement
 	: compound_statement
 	| expression_statement
