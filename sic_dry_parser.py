@@ -478,7 +478,7 @@ class DryParser:
         return self.peek_conditional_expression()
 
     def peek_declaration(self):
-        pass
+        declaration_specifiers: node.TypeName = self.peek_declaration_specifiers()
 
     def peek_declaration_specifiers(self):
         pass
@@ -605,7 +605,7 @@ class DryParser:
     def peek_identifier_list(self):
         pass
 
-    def peek_type_name(self) -> node.TypeName:
+    def peek_specifier_list(self) -> node.CPrimaryType:
         specifier_counter: node.CTypeSpecifier = node.CTypeSpecifier(0)
         c_primary_type: node.CPrimaryType = node.CPrimaryType.VOID
 
@@ -625,6 +625,9 @@ class DryParser:
             self.fatal_token("type specifier expected")
 
         return c_primary_type
+
+    def peek_type_name(self) -> node.TypeName:
+        return self.peek_specifier_list()
 
     def peek_abstract_declarator(self):
         pass
