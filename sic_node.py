@@ -4,6 +4,11 @@ import sic_token as tk
 import typing
 
 
+class NoneNode:
+    def __init__(self):
+        pass
+
+
 class CPrimaryType(enum.Enum):
     VOID = enum.auto()  # 'void'
     CHAR = enum.auto()  # 'char' or 'signed char'
