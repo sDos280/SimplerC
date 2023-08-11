@@ -5,7 +5,6 @@ any analysis of the ast won't be done here.
 
 """
 
-import typing
 import sic_utils as utils
 import sic_token as tk
 import sic_lexer as lx
@@ -65,10 +64,6 @@ class DryParser:
                                    tk.TokenKind.AND_ASSIGN,
                                    tk.TokenKind.XOR_ASSIGN,
                                    tk.TokenKind.OR_ASSIGN])
-
-    @staticmethod
-    def is_node(node_type: typing.Type[node.Node] | list[typing.Type[node.Node]], obj: node.Node) -> bool:
-        return isinstance(node_type, obj)
 
     def fatal_token(self, error_string: str, token: tk.Token = None):
         fetal_token: tk.Token = token if token is not None else self.current_token
@@ -162,7 +157,7 @@ class DryParser:
             self.fatal_token("Expected assignment operator token")
 
     # dry parser grammar peek methods
-    def peek_primary_expression(self) -> node.Node:
+    def peek_primary_expression(self) -> node.Node | list[node.Node]:
         if self.is_token_kind(tk.TokenKind.IDENTIFIER):
             return self.peek_identifier()
         elif self.is_token_kind([tk.TokenKind.INTEGER_LITERAL, tk.TokenKind.FLOAT_LITERAL]):
@@ -180,7 +175,7 @@ class DryParser:
         elif self.is_token_kind(tk.TokenKind.OPENING_PARENTHESIS):
             self.peek_token()  # peek ( token
 
-            expression: node.Node = self.peek_expression()
+            expression: node.Expression = self.peek_expression()
 
             self.peek_token()  # peek ) token
 
@@ -482,9 +477,9 @@ class DryParser:
         if self.is_token_kind(tk.TokenKind.QUESTION_MARK):
             self.peek_token()  # peek the ? token
 
-            expression: node.Node = self.peek_expression()
+            expression: node.Expression = self.peek_expression()
 
-            self.expect_token_kind(tk.TokenKind.COLON, "Expected ':' in conditional expression")
+            self.expect_token_kind(tk.TokenKind.COLON, "Expected ':' in conditional expressions")
 
             self.peek_token()  # peek the : token
 
@@ -518,8 +513,15 @@ class DryParser:
         else:
             return conditional_expression
 
-    def peek_expression(self):
-        pass
+    def peek_expression(self) -> node.Expression:
+        expression: node.Expression = node.Expression([self.peek_assignment_expression()])
+
+        while self.is_token_kind(tk.TokenKind.COMMA):
+            self.peek_token()  # peek the , token
+
+            expression.expressions.append(self.peek_assignment_expression())
+
+        return expression
 
     def peek_constant_expression(self):
         pass

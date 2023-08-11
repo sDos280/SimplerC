@@ -149,5 +149,10 @@ class CTernaryOp:
         self.false_value: Node = false_value
 
 
-Node = typing.Union[Identifier, CharLiteral, ConstantLiteral, CUnaryOp, CCast, CBinaryOp, CTernaryOp]
+class Expression:
+    def __init__(self, sub_expression: list[Node]):
+        self.expressions = sub_expression
+
+
+Node = typing.Union[Identifier, CharLiteral, ConstantLiteral, CUnaryOp, CCast, CBinaryOp, CTernaryOp, Expression]
 TypeName = CPrimaryType
