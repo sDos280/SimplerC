@@ -137,8 +137,7 @@ declaration
 	;
 
 declaration_specifiers
-	| type_specifier
-	| type_specifier declaration_specifiers
+	| specifier_list
 	;
 
 init_declarator_list
