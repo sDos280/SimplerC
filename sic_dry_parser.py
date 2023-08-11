@@ -626,7 +626,7 @@ class DryParser:
         pass
 
     def peek_initializer(self):
-        pass
+        return self.peek_assignment_expression()
 
     def peek_initializer_list(self):
         pass
