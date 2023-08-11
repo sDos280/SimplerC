@@ -66,7 +66,7 @@ class Identifier:
 
 
 class CharLiteral:
-    def __int__(self, token: tk.Token):
+    def __init__(self, token: tk.Token):
         self.token = token
 
 
