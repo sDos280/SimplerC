@@ -171,12 +171,12 @@ class DryParser:
             self.peek_token()  # peek integer/float literal token
 
             return node.ConstantLiteral(token)
-        elif self.is_token_kind(tk.TokenKind.STRING_LITERAL):
+        elif self.is_token_kind(tk.TokenKind.CHAR_LITERAL):
             token: tk.Token = self.current_token
 
-            self.peek_token()  # peek string literal token
+            self.peek_token()  # peek char literal token
 
-            return node.StringLiteral(token)
+            return node.CharLiteral(token)
         elif self.is_token_kind(tk.TokenKind.OPENING_PARENTHESIS):
             self.peek_token()  # peek ( token
 

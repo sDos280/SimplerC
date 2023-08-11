@@ -3,7 +3,7 @@
 primary_expression
 	: IDENTIFIER
 	| CONSTANT
-	| STRING_LITERAL
+	| CHAR_LITERAL
 	| '(' expression ')'
 	;
 

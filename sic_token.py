@@ -28,7 +28,7 @@ class TokenKind(enum.Enum):
     # Literals
     INTEGER_LITERAL = enum.auto()
     FLOAT_LITERAL = enum.auto()
-    STRING_LITERAL = enum.auto()
+    CHAR_LITERAL = enum.auto()
 
     # CIdentifier
     IDENTIFIER = enum.auto()

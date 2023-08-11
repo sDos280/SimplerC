@@ -127,91 +127,92 @@ class Lexer:
         opener: str = self.current_char
         self.peek_char()  # peek first char
 
-        while True:
-            if self.is_char(opener):
-                str_ += self.current_char
-                self.peek_char()  # peek "opener" char
-                break
+        if self.is_char('\\'):  # escape sequences
+            str_ += self.current_char
+            self.peek_char()  # peek / char
 
             if self.is_char(END_OF_FILE):
                 raise SyntaxError(f"An string/char literal ender in needed, file index: {self.index}")
 
-            if self.is_char('\\'):  # escape sequences
+            if self.is_char('\''):  # single quote
+                str_ = str_[0:-1]  # remove the \ char
                 str_ += self.current_char
-                self.peek_char()  # peek / char
+                self.peek_char()  # peek ' char
 
-                if self.is_char(END_OF_FILE):
-                    raise SyntaxError(f"An string/char literal ender in needed, file index: {self.index}")
+            elif self.is_char('\"'):  # double  quote
+                str_ = str_[0:-1]  # remove the \ char
+                str_ += self.current_char
+                self.peek_char()  # peek " char
 
-                if self.is_char('\''):  # single quote
-                    str_ = str_[0:-1]  # remove the \ char
-                    str_ += self.current_char
-                    self.peek_char()  # peek ' char
+            elif self.is_char('?'):  # question mark
+                str_ = str_[0:-1]  # remove the \ char
+                str_ += self.current_char
+                self.peek_char()  # peek ? char
 
-                elif self.is_char('\"'):  # double  quote
-                    str_ = str_[0:-1]  # remove the \ char
-                    str_ += self.current_char
-                    self.peek_char()  # peek " char
+            elif self.is_char('\\'):  # backslash
+                str_ = str_[0:-1]  # remove the \ char
+                str_ += self.current_char
+                self.peek_char()  # peek \ char
 
-                elif self.is_char('?'):  # question mark
-                    str_ = str_[0:-1]  # remove the \ char
-                    str_ += self.current_char
-                    self.peek_char()  # peek ? char
+            elif self.is_char('a'):  # alert (bell) character
+                str_ = str_[0:-1]  # remove the \ char
+                str_ += '\a'
+                self.peek_char()  # peek a char
 
-                elif self.is_char('\\'):  # backslash
-                    str_ = str_[0:-1]  # remove the \ char
-                    str_ += self.current_char
-                    self.peek_char()  # peek \ char
+            elif self.is_char('b'):  # backspace
+                str_ = str_[0:-1]  # remove the \ char
+                str_ += '\b'
+                self.peek_char()  # peek b char
 
-                elif self.is_char('a'):  # alert (bell) character
-                    str_ = str_[0:-1]  # remove the \ char
-                    str_ += '\a'
-                    self.peek_char()  # peek a char
+            elif self.is_char('f'):  # form feed
+                str_ = str_[0:-1]  # remove the \ char
+                str_ += '\f'
+                self.peek_char()  # peek f char
 
-                elif self.is_char('b'):  # backspace
-                    str_ = str_[0:-1]  # remove the \ char
-                    str_ += '\b'
-                    self.peek_char()  # peek b char
+            elif self.is_char('n'):  # newline (line feed)
+                str_ = str_[0:-1]  # remove the \ char
+                str_ += '\n'
+                self.peek_char()  # peek n char
 
-                elif self.is_char('f'):  # form feed
-                    str_ = str_[0:-1]  # remove the \ char
-                    str_ += '\f'
-                    self.peek_char()  # peek f char
+            elif self.is_char('r'):  # carriage return
+                str_ = str_[0:-1]  # remove the \ char
+                str_ += '\r'
+                self.peek_char()  # peek r char
 
-                elif self.is_char('n'):  # newline (line feed)
-                    str_ = str_[0:-1]  # remove the \ char
-                    str_ += '\n'
-                    self.peek_char()  # peek n char
+            elif self.is_char('t'):  # horizontal tab
+                str_ = str_[0:-1]  # remove the \ char
+                str_ += '\t'
+                self.peek_char()  # peek t char
 
-                elif self.is_char('r'):  # carriage return
-                    str_ = str_[0:-1]  # remove the \ char
-                    str_ += '\r'
-                    self.peek_char()  # peek r char
+            elif self.is_char('v'):  # vertical tab
+                str_ = str_[0:-1]  # remove the \ char
+                str_ += '\v'
+                self.peek_char()  # peek v char
 
-                elif self.is_char('t'):  # horizontal tab
-                    str_ = str_[0:-1]  # remove the \ char
-                    str_ += '\t'
-                    self.peek_char()  # peek t char
+            elif self.is_char('0'):  # null character
+                str_ = str_[0:-1]  # remove the \ char
+                str_ += '\0'
+                self.peek_char()  # peek 0 char
 
-                elif self.is_char('v'):  # vertical tab
-                    str_ = str_[0:-1]  # remove the \ char
-                    str_ += '\v'
-                    self.peek_char()  # peek v char
-
-                elif self.is_char('0'):  # null character
-                    str_ = str_[0:-1]  # remove the \ char
-                    str_ += '\0'
-                    self.peek_char()  # peek 0 char
-
-                elif self.is_char('x'):  # hexadecimal representation of a character
-                    # TODO: Implement escape sequences of hexadecimal representation of a character
-                    assert False, "Not implemented"
-                continue
-
+            elif self.is_char('x'):  # hexadecimal representation of a character
+                # TODO: Implement escape sequences of hexadecimal representation of a character
+                assert False, "Not implemented"
+        elif self.is_char(opener):
             str_ += self.current_char
-            self.peek_char()  # peek char
+            self.peek_char()  # peek "opener" char
 
-        return tk.Token(tk.TokenKind.STRING_LITERAL, index_, str_)
+            return tk.Token(tk.TokenKind.CHAR_LITERAL, index_, str_)
+
+        str_ += self.current_char
+        self.peek_char()  # peek char
+
+        if not self.is_char(opener):
+            SyntaxError(f"An string/char literal ender in needed, file index: {self.index}")
+
+        str_ += self.current_char
+        self.peek_char()  # peek "opener" char
+
+        return tk.Token(tk.TokenKind.CHAR_LITERAL, index_, str_)
 
     def peek_operator_or_separator(self) -> tk.Token:
         index_: int = self.index

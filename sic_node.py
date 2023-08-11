@@ -65,7 +65,7 @@ class Identifier:
         self.token = token
 
 
-class StringLiteral:
+class CharLiteral:
     def __int__(self, token: tk.Token):
         self.token = token
 
@@ -149,5 +149,5 @@ class CTernaryOp:
         self.false_value: Node = false_value
 
 
-Node = typing.Union[Identifier, StringLiteral, ConstantLiteral, CUnaryOp, CCast, CBinaryOp, CTernaryOp]
+Node = typing.Union[Identifier, CharLiteral, ConstantLiteral, CUnaryOp, CCast, CBinaryOp, CTernaryOp]
 TypeName = CPrimaryType
