@@ -165,6 +165,6 @@ class Declaration:
         self.declarators = declarators
 
 
-Node = typing.Union[NoneNode, Identifier, CharLiteral, ConstantLiteral, CUnaryOp, CCast, CBinaryOp, CTernaryOp, Expression]
-Declarator = typing.Union[typing.Tuple[Identifier, Node]]
 TypeName = CPrimaryType
+Node = typing.Union[NoneNode, Identifier, CharLiteral, ConstantLiteral, CUnaryOp, CCast, CBinaryOp, CTernaryOp, Expression, TypeName]
+Declarator = typing.Union[typing.Tuple[Identifier, Node]]
