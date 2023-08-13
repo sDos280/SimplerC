@@ -183,11 +183,6 @@ parameter_declaration
 	| declaration_specifiers
 	;
 
-identifier_list
-	: IDENTIFIER
-	| identifier_list ',' IDENTIFIER
-	;
-
 initializer
 	: assignment_expression
 	;
