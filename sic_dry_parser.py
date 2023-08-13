@@ -554,61 +554,10 @@ class DryParser:
 
                 return node.CTypeSpecifier.UNSIGNED
 
-    def peek_struct_or_union_specifier(self):
-        pass
-
-    def peek_struct_or_union(self):
-        pass
-
-    def peek_struct_declaration_list(self):
-        pass
-
-    def peek_struct_declaration(self):
-        pass
-
-    def peek_specifier_qualifier_list(self):
-        pass
-
-    def peek_struct_declarator_list(self):
-        pass
-
-    def peek_struct_declarator(self):
-        pass
-
-    def peek_enum_specifier(self):
-        pass
-
-    def peek_enumerator_list(self):
-        pass
-
-    def peek_enumerator(self):
-        pass
-
-    def peek_type_qualifier(self):
-        pass
-
-    def peek_declarator(self):
-        pass
-
-    def peek_direct_declarator(self):
-        pass
-
-    def peek_pointer(self):
-        pass
-
-    def peek_type_qualifier_list(self):
-        pass
-
-    def peek_parameter_type_list(self):
-        pass
-
     def peek_parameter_list(self):
         pass
 
     def peek_parameter_declaration(self):
-        pass
-
-    def peek_identifier_list(self):
         pass
 
     def peek_specifier_list(self) -> node.CPrimaryType:
@@ -634,12 +583,6 @@ class DryParser:
 
     def peek_type_name(self) -> node.TypeName:
         return self.peek_specifier_list()
-
-    def peek_abstract_declarator(self):
-        pass
-
-    def peek_direct_abstract_declarator(self):
-        pass
 
     def peek_initializer(self) -> node.Node:
         return self.peek_assignment_expression()
