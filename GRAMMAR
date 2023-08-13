@@ -172,10 +172,6 @@ type_name
 	: specifier_list
 	;
 
-declarator
-	: IDENTIFIER
-	;
-
 
 parameter_list
 	: parameter_declaration
