@@ -8,6 +8,9 @@ class NoneNode:
     def __init__(self):
         pass
 
+    def to_dict(self):
+        return {}
+
 
 class CPrimaryType(enum.Enum):
     VOID = enum.auto()  # 'void'
@@ -21,6 +24,12 @@ class CPrimaryType(enum.Enum):
     ULONG = enum.auto()  # 'unsigned long'
     FLOAT = enum.auto()  # 'float'
     DOUBLE = enum.auto()  # 'double'
+
+    def to_dict(self):
+        return {
+            "node": "CPrimaryType",
+            "value": self.name
+        }
 
 
 class CTypeSpecifier(enum.IntFlag):
@@ -69,21 +78,46 @@ class Identifier:
     def __init__(self, token: tk.Token):
         self.token = token
 
+    def to_dict(self):
+        return {
+            "node": "Identifier",
+            "name": self.token.string
+        }
+
 
 class CharLiteral:
     def __init__(self, token: tk.Token):
         self.token = token
+
+    def to_dict(self):
+        return {
+            "node": "CharLiteral",
+            "value": self.token.string
+        }
 
 
 class ConstantLiteral:
     def __init__(self, token: tk.Token):
         self.token = token
 
+    def to_dict(self):
+        return {
+            "node": "ConstantLiteral",
+            "value": self.token.string
+        }
+
 
 class CUnaryOp:
     def __init__(self, kind: CUnaryOpKind, expression: Node):
         self.kind = kind
         self.expression = expression
+
+    def to_dict(self):
+        return {
+            "node": "CUnaryOp",
+            "kind": self.kind.to_dict(),
+            "expression": self.expression.to_dict()
+        }
 
 
 class CUnaryOpKind(enum.Enum):
@@ -101,11 +135,24 @@ class CUnaryOpKind(enum.Enum):
     LogicalNOT = enum.auto()  # '!'
     Sizeof = enum.auto()  # 'sizeof'
 
+    def to_dict(self):
+        return {
+            "node": "CUnaryOpKind",
+            "value": self.name
+        }
+
 
 class CCast:
     def __init__(self, type_name: TypeName, expression: Node):
         self.type_name = type_name
         self.expression = expression
+
+    def to_dict(self):
+        return {
+            "node": "CCast",
+            "type_name": self.type_name.to_dict(),
+            "expression": self.expression.to_dict()
+        }
 
 
 class CBinaryOpKind(enum.Enum):
@@ -139,12 +186,26 @@ class CBinaryOpKind(enum.Enum):
     BitwiseXorAssignment = enum.auto()
     BitwiseOrAssignment = enum.auto()
 
+    def to_dict(self):
+        return {
+            "node": "CBinaryOpKind",
+            "value": self.name
+        }
+
 
 class CBinaryOp:
     def __init__(self, kind: CBinaryOpKind, left: Node, right: Node):
         self.kind: CBinaryOpKind = kind
         self.left: Node = left
         self.right: Node = right
+
+    def to_dict(self):
+        return {
+            "node": "CBinaryOp",
+            "kind": self.kind.to_dict(),
+            "left": self.left.to_dict(),
+            "right": self.right.to_dict()
+        }
 
 
 class CTernaryOp:
@@ -153,16 +214,37 @@ class CTernaryOp:
         self.true_value: Node = true_value
         self.false_value: Node = false_value
 
+    def to_dict(self):
+        return {
+            "node": "CTernaryOp",
+            "condition": self.condition.to_dict(),
+            "true_value": self.true_value.to_dict(),
+            "false_value": self.false_value.to_dict()
+        }
+
 
 class Expression:
     def __init__(self, sub_expression: list[Node]):
         self.expressions = sub_expression
+
+    def to_dict(self):
+        return {
+            "node": "Expression",
+            "expressions": [expression.to_dict() for expression in self.expressions]
+        }
 
 
 class Declaration:
     def __init__(self, type_name: TypeName, declarators: list[Declarator]):
         self.type_name = type_name
         self.declarators = declarators
+
+    def to_dict(self):
+        return {
+            "node": "Declaration",
+            "type_name": self.type_name.to_dict(),
+            "declarators": [[declarator[0].to_dict(), declarator[1].to_dict()] for declarator in self.declarators]
+        }
 
 
 TypeName = CPrimaryType
