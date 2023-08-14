@@ -593,8 +593,13 @@ class DryParser:
     def peek_compound_statement(self):
         pass
 
-    def peek_declaration_list(self):
-        pass
+    def peek_declaration_list(self) -> list[node.Declaration]:
+        declaration_list: list[node.Declaration] = [self.peek_declaration()]
+
+        while self.is_token_type_specifier():
+            declaration_list.append(self.peek_declaration())
+
+        return declaration_list
 
     def peek_statement_list(self):
         pass
