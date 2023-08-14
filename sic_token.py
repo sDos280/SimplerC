@@ -8,6 +8,7 @@ class TokenKind(enum.Enum):
 
     # Keywords
     UNSIGNED = enum.auto()  # unsigned
+    CONTINUE = enum.auto()  # continue
     SIZEOF = enum.auto()  # sizeof
     SIGNED = enum.auto()  # signed
     RETURN = enum.auto()  # return
@@ -88,6 +89,7 @@ class TokenKind(enum.Enum):
 string_to_keyword: dict[str, TokenKind] = {
     # the token hierarchy is by string length
     "unsigned": TokenKind.UNSIGNED,
+    "continue": TokenKind.CONTINUE,
     "sizeof": TokenKind.SIZEOF,
     "signed": TokenKind.SIGNED,
     "return": TokenKind.RETURN,
