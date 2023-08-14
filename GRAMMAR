@@ -245,5 +245,6 @@ external_declaration
 	;
 
 function_definition
+	: FUNC declaration_specifiers IDENTIFIER '(' parameter_list ')' ';'
 	: FUNC declaration_specifiers IDENTIFIER '(' parameter_list ')' compound_statement
 	;
