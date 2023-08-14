@@ -599,8 +599,18 @@ class DryParser:
     def peek_statement_list(self):
         pass
 
-    def peek_expression_statement(self):
-        pass
+    def peek_expression_statement(self) -> node.Expression | node.NoneNode:
+        if self.is_token_kind(tk.TokenKind.SEMICOLON):
+            self.peek_token()  # peek the ; token
+
+            return node.NoneNode()
+        else:
+            expression: node.Expression = self.peek_expression()
+
+            self.expect_token_kind(tk.TokenKind.SEMICOLON, "Expected ';' in expression statement")
+            self.peek_token()  # peek the ; token
+
+            return expression
 
     def peek_selection_statement(self):
         pass
