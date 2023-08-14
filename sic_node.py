@@ -247,6 +247,37 @@ class Declaration:
         }
 
 
+class Continue:
+    def __init__(self):
+        pass
+
+    def to_dict(self):
+        return {
+            "node": "Continue",
+        }
+
+
+class Break:
+    def __init__(self):
+        pass
+
+    def to_dict(self):
+        return {
+            "node": "Break",
+        }
+
+
+class Return:
+    def __init__(self, expression: Node):
+        self.expression = expression
+
+    def to_dict(self):
+        return {
+            "node": "Return",
+            "expression": self.expression.to_dict()
+        }
+
+
 TypeName = CPrimaryType
-Node = typing.Union[NoneNode, Identifier, CharLiteral, ConstantLiteral, CUnaryOp, CCast, CBinaryOp, CTernaryOp, Expression, TypeName]
+Node = typing.Union[NoneNode, Identifier, CharLiteral, ConstantLiteral, CUnaryOp, CCast, CBinaryOp, CTernaryOp, Expression, TypeName, Continue, Break, Return]
 Declarator = typing.Union[typing.Tuple[Identifier, Node]]
