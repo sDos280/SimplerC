@@ -620,8 +620,39 @@ class DryParser:
     def peek_selection_statement(self):
         pass
 
-    def peek_iteration_statement(self):
-        pass
+    def peek_iteration_statement(self) -> node.Node:
+        if self.is_token_kind(tk.TokenKind.WHILE):
+            self.peek_token()  # peek while token
+
+            self.expect_token_kind(tk.TokenKind.OPENING_PARENTHESIS, "Expected '(' in while statement")
+            self.peek_token()  # peek ( token
+
+            condition: node.Expression = self.peek_expression()
+
+            self.expect_token_kind(tk.TokenKind.CLOSING_PARENTHESIS, "Expected ')' in while statement")
+            self.peek_token()  # peek ) token
+
+            statement: node.Node = self.peek_statement()
+
+            return node.While(condition, statement)
+        elif self.is_token_kind(tk.TokenKind.FOR):
+            self.peek_token()  # peek for token
+
+            self.expect_token_kind(tk.TokenKind.OPENING_PARENTHESIS, "Expected '(' in for statement")
+            self.peek_token()  # peek ( token
+
+            initializer: node.Node = self.peek_expression_statement()
+            condition: node.Expression = self.peek_expression_statement()
+            update: node.Expression = self.peek_expression_statement()
+
+            self.expect_token_kind(tk.TokenKind.CLOSING_PARENTHESIS, "Expected ')' in for statement")
+            self.peek_token()  # peek ) token
+
+            statement: node.Node = self.peek_statement()
+
+            return node.For(initializer, condition, update, statement)
+        else:
+            self.fatal_token("Expected iteration statement")
 
     def peek_jump_statement(self) -> node.Node:
         if self.is_token_kind(tk.TokenKind.CONTINUE):
