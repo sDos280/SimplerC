@@ -623,8 +623,21 @@ class DryParser:
     def peek_iteration_statement(self):
         pass
 
-    def peek_jump_statement(self):
-        pass
+    def peek_jump_statement(self) -> node.Node:
+        if self.is_token_kind(tk.TokenKind.CONTINUE):
+            self.peek_token()  # peek continue token
+
+            return node.Continue()
+        elif self.is_token_kind(tk.TokenKind.BREAK):
+            self.peek_token()  # peek break token
+
+            return node.Break()
+        elif self.is_token_kind(tk.TokenKind.RETURN):
+            self.peek_token()  # peek return token
+
+            return node.Return(self.peek_expression())
+        else:
+            self.fatal_token("Expected jump statement")
 
     def peek_translation_unit(self):
         pass
