@@ -278,6 +278,36 @@ class Return:
         }
 
 
+class While:
+    def __init__(self, condition: Node, body: Node):
+        self.condition = condition
+        self.body = body
+
+    def to_dict(self):
+        return {
+            "node": "While",
+            "condition": self.condition.to_dict(),
+            "body": self.body.to_dict()
+        }
+
+
+class For:
+    def __init__(self, init: Node, condition: Node, update: Node, body: Node):
+        self.init = init
+        self.condition = condition
+        self.update = update
+        self.body = body
+
+    def to_dict(self):
+        return {
+            "node": "For",
+            "init": self.init.to_dict(),
+            "condition": self.condition.to_dict(),
+            "update": self.update.to_dict(),
+            "body": self.body.to_dict()
+        }
+
+
 TypeName = CPrimaryType
-Node = typing.Union[NoneNode, Identifier, CharLiteral, ConstantLiteral, CUnaryOp, CCast, CBinaryOp, CTernaryOp, Expression, TypeName, Continue, Break, Return]
+Node = typing.Union[NoneNode, Identifier, CharLiteral, ConstantLiteral, CUnaryOp, CCast, CBinaryOp, CTernaryOp, Expression, TypeName, Continue, Break, Return, While, For]
 Declarator = typing.Union[typing.Tuple[Identifier, Node]]
