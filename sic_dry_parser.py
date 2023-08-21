@@ -639,7 +639,27 @@ class DryParser:
             return expression
 
     def peek_selection_statement(self):
-        pass
+        self.expect_token_kind(tk.TokenKind.IF, "Expected 'if' in selection statement")
+        self.peek_token()  # peek the if token
+
+        self.expect_token_kind(tk.TokenKind.OPENING_PARENTHESIS, "Expected '(' in selection statement")
+        self.peek_token()  # peek the ( token
+
+        decision_expression: node.Expression = self.peek_expression()
+
+        self.expect_token_kind(tk.TokenKind.CLOSING_PARENTHESIS, "Expected ')' in selection statement")
+        self.peek_token()  # peek the ) token
+
+        if_statement: node.Node = self.peek_statement()
+
+        if self.is_token_kind(tk.TokenKind.ELSE):
+            self.peek_token()  # peek the else token
+
+            else_statement: node.Node = self.peek_statement()
+
+            return node.If(decision_expression, if_statement, else_statement)
+
+        return node.If(decision_expression, if_statement, node.NoneNode())
 
     def peek_iteration_statement(self) -> node.Node:
         if self.is_token_kind(tk.TokenKind.WHILE):
