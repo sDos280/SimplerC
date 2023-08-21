@@ -591,7 +591,28 @@ class DryParser:
         pass
 
     def peek_compound_statement(self):
-        pass
+        compound_statement: node.CompoundStatement = node.CompoundStatement([], [])
+
+        self.expect_token_kind(tk.TokenKind.OPENING_CURLY_BRACE, "Expected '{' in compound statement")
+        self.peek_token()  # peek the { token
+
+        # '{' '}'
+        if self.is_token_kind(tk.TokenKind.CLOSING_CURLY_BRACE):
+            self.peek_token()  # peek the } token
+
+            return compound_statement
+
+        # '{' declaration_list '}'  |  '{' declaration_list '}'  |  '{' declaration_list statement_list '}'
+        if self.is_token_type_specifier():
+            compound_statement.declaration_list = self.peek_declaration_list()
+
+        while not self.is_token_kind(tk.TokenKind.CLOSING_CURLY_BRACE):
+            compound_statement.statements.append(self.peek_statement())
+
+        self.expect_token_kind(tk.TokenKind.CLOSING_CURLY_BRACE, "Expected '}' in compound statement")
+        self.peek_token()  # peek the } token
+
+        return compound_statement
 
     def peek_declaration_list(self) -> list[node.Declaration]:
         declaration_list: list[node.Declaration] = [self.peek_declaration()]
