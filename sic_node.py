@@ -321,6 +321,21 @@ class CompoundStatement:
         }
 
 
+class If:
+    def __init__(self, condition: Node, body: Node, else_body: Node):
+        self.condition = condition
+        self.body = body
+        self.else_body = else_body
+
+    def to_dict(self):
+        return {
+            "node": "If",
+            "condition": self.condition.to_dict(),
+            "body": self.body.to_dict(),
+            "else_body": self.else_body.to_dict()
+        }
+
+
 TypeName = CPrimaryType
 Node = typing.Union[NoneNode,
                     Identifier,
