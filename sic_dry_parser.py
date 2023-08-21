@@ -65,6 +65,18 @@ class DryParser:
                                    tk.TokenKind.XOR_ASSIGN,
                                    tk.TokenKind.OR_ASSIGN])
 
+    def is_compound_statement(self) -> bool:
+        return self.is_token_kind(tk.TokenKind.OPENING_CURLY_BRACE)
+
+    def is_selection_statement(self) -> bool:
+        return self.is_token_kind(tk.TokenKind.IF)
+
+    def is_iteration_statement(self) -> bool:
+        return self.is_token_kind([tk.TokenKind.WHILE, tk.TokenKind.FOR])
+
+    def is_jump_statement(self) -> bool:
+        return self.is_token_kind([tk.TokenKind.CONTINUE, tk.TokenKind.BREAK, tk.TokenKind.RETURN])
+
     def fatal_token(self, error_string: str, token: tk.Token = None):
         fetal_token: tk.Token = token if token is not None else self.current_token
         line_index: int = utils.get_line_index_by_char_index(self.lexer.string, fetal_token.start)
@@ -587,8 +599,17 @@ class DryParser:
     def peek_initializer(self) -> node.Node:
         return self.peek_assignment_expression()
 
-    def peek_statement(self):
-        pass
+    def peek_statement(self) -> node.Node:
+        if self.is_compound_statement():
+            return self.peek_compound_statement()
+        elif self.is_selection_statement():
+            return self.peek_selection_statement()
+        elif self.is_iteration_statement():
+            return self.peek_iteration_statement()
+        elif self.is_jump_statement():
+            return self.peek_jump_statement()
+        else:
+            return self.peek_expression_statement()
 
     def peek_compound_statement(self) -> node.CompoundStatement:
         compound_statement: node.CompoundStatement = node.CompoundStatement([], [])
@@ -684,7 +705,7 @@ class DryParser:
 
             initializer: node.Node = self.peek_expression_statement()
             condition: node.Expression = self.peek_expression_statement()
-            update: node.Expression = self.peek_expression_statement()
+            update: node.Expression = self.peek_expression()
 
             self.expect_token_kind(tk.TokenKind.CLOSING_PARENTHESIS, "Expected ')' in for statement")
             self.peek_token()  # peek ) token
