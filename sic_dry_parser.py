@@ -590,7 +590,7 @@ class DryParser:
     def peek_statement(self):
         pass
 
-    def peek_compound_statement(self):
+    def peek_compound_statement(self) -> node.CompoundStatement:
         compound_statement: node.CompoundStatement = node.CompoundStatement([], [])
 
         self.expect_token_kind(tk.TokenKind.OPENING_CURLY_BRACE, "Expected '{' in compound statement")
@@ -638,7 +638,7 @@ class DryParser:
 
             return expression
 
-    def peek_selection_statement(self):
+    def peek_selection_statement(self) -> node.If:
         self.expect_token_kind(tk.TokenKind.IF, "Expected 'if' in selection statement")
         self.peek_token()  # peek the if token
 

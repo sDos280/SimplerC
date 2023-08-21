@@ -351,5 +351,7 @@ Node = typing.Union[NoneNode,
                     Return,
                     While,
                     For,
-                    CompoundStatement]
+                    CompoundStatement,
+                    If
+]
 Declarator = typing.Union[typing.Tuple[Identifier, Node]]
