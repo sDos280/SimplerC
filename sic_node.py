@@ -308,6 +308,33 @@ class For:
         }
 
 
+class CompoundStatement:
+    def __init__(self, declarations: list[Declaration], statements: list[Node]):
+        self.declarations = declarations
+        self.statements = statements
+
+    def to_dict(self):
+        return {
+            "node": "CompoundStatement",
+            "declarations": [declaration.to_dict() for declaration in self.declarations],
+            "statements": [statement.to_dict() for statement in self.statements]
+        }
+
+
 TypeName = CPrimaryType
-Node = typing.Union[NoneNode, Identifier, CharLiteral, ConstantLiteral, CUnaryOp, CCast, CBinaryOp, CTernaryOp, Expression, TypeName, Continue, Break, Return, While, For]
+Node = typing.Union[NoneNode,
+                    Identifier,
+                    CharLiteral,
+                    ConstantLiteral,
+                    CUnaryOp, CCast,
+                    CBinaryOp,
+                    CTernaryOp,
+                    Expression,
+                    TypeName,
+                    Continue,
+                    Break,
+                    Return,
+                    While,
+                    For,
+                    CompoundStatement]
 Declarator = typing.Union[typing.Tuple[Identifier, Node]]
