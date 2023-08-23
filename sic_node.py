@@ -247,19 +247,6 @@ class Declaration:
         }
 
 
-class ParameterDeclaration:
-    def __init__(self, type_name: TypeName, declarator: Declarator):
-        self.type_name = type_name
-        self.declarator = declarator
-
-    def to_dict(self):
-        return {
-            "node": "Declaration",
-            "type_name": self.type_name.to_dict(),
-            "declarator": [self.declarator[0].to_dict(), self.declarator[1].to_dict()]
-        }
-
-
 class Continue:
     def __init__(self):
         pass
@@ -369,5 +356,5 @@ Node = typing.Union[NoneNode,
 ]
 
 Declarator = typing.Union[typing.Tuple[Identifier, Node],
-                          typing.Tuple[NoneNode, Node]  # for function parameter
+                          typing.Tuple[NoneNode, NoneNode]  # for function parameter
 ]
