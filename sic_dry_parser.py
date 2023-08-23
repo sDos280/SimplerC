@@ -566,11 +566,23 @@ class DryParser:
 
                 return node.CTypeSpecifier.UNSIGNED
 
-    def peek_parameter_list(self):
-        pass
+    def peek_parameter_list(self) -> list[node.Declaration]:
+        parameter_list: list[node.Declaration] = [self.peek_parameter_declaration()]
 
-    def peek_parameter_declaration(self):
-        pass
+        while self.is_token_kind(tk.TokenKind.COMMA):
+            self.peek_token()  # peek the , token
+
+            parameter_list.append(self.peek_parameter_declaration())
+
+        return parameter_list
+
+    def peek_parameter_declaration(self) -> node.Declaration:
+        declaration_specifiers: node.TypeName = self.peek_declaration_specifiers()
+
+        if self.is_token_kind(tk.TokenKind.IDENTIFIER):
+            return node.Declaration(declaration_specifiers, [(self.peek_identifier(), node.NoneNode())])
+        else:
+            return node.Declaration(declaration_specifiers, [(node.NoneNode(), node.NoneNode())])
 
     def peek_specifier_list(self) -> node.CPrimaryType:
         specifier_counter: node.CTypeSpecifier = node.CTypeSpecifier(0)
