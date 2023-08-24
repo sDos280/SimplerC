@@ -392,3 +392,5 @@ Node = typing.Union[NoneNode,
 Declarator = typing.Union[typing.Tuple[Identifier, Node],
                           typing.Tuple[NoneNode, NoneNode]  # for function parameter
 ]
+
+TranslationUnit = typing.Union[FunctionDefinition, FunctionDeclaration, CompoundStatement]
