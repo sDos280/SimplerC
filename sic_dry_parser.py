@@ -177,8 +177,15 @@ class DryParser:
         else:
             return primary_expression
 
-    def peek_argument_expression_list(self):
-        pass
+    def peek_argument_expression_list(self) -> list[node.Node]:
+        argument_expression_list: list[node.Node] = [self.peek_assignment_expression()]
+
+        while self.is_token_kind(tk.TokenKind.COMMA):
+            self.peek_token()  # peek , token
+
+            argument_expression_list.append(self.peek_assignment_expression())
+
+        return argument_expression_list
 
     def peek_unary_expression(self) -> node.Node:
         match self.current_token.kind:
