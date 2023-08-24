@@ -750,5 +750,29 @@ class DryParser:
     def peek_external_declaration(self):
         pass
 
-    def peek_function_definition(self):
-        pass
+    def peek_function_definition(self) -> node.FunctionDefinition | node.FunctionDeclaration:
+        self.expect_token_kind(tk.TokenKind.FUNC, "Expected func keyword in function definition")
+        self.peek_token()  # peek func token
+
+        declaration_specifiers: node.TypeName = self.peek_declaration_specifiers()
+
+        self.expect_token_kind(tk.TokenKind.IDENTIFIER, "Expected identifier in function definition")
+        identifier: node.Identifier = node.Identifier(self.current_token)
+        self.peek_token()  # peek identifier token
+
+        self.expect_token_kind(tk.TokenKind.OPENING_PARENTHESIS, "Expected '(' in function definition")
+        self.peek_token()  # peek ( token
+
+        parameter_list: list[node.Declaration] = self.peek_parameter_list()
+
+        self.expect_token_kind(tk.TokenKind.CLOSING_PARENTHESIS, "Expected ')' in function definition")
+        self.peek_token()  # peek ) token
+
+        if self.is_token_kind(tk.TokenKind.SEMICOLON):
+            self.peek_token()  # peek ; token
+
+            return node.FunctionDeclaration(declaration_specifiers, identifier, parameter_list)
+        else:
+            compound_statement: node.CompoundStatement = self.peek_compound_statement()
+
+            return node.FunctionDefinition(declaration_specifiers, identifier, parameter_list, compound_statement)
