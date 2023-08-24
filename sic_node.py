@@ -336,6 +336,21 @@ class If:
         }
 
 
+class FunctionDeclaration:
+    def __init__(self, type_name: TypeName, declarator: Declarator, body: Node):
+        self.type_name = type_name
+        self.declarator = declarator
+        self.body = body
+
+    def to_dict(self):
+        return {
+            "node": "FunctionDeclaration",
+            "type_name": self.type_name.to_dict(),
+            "declarator": [self.declarator[0].to_dict(), self.declarator[1].to_dict()],
+            "body": self.body.to_dict()
+        }
+
+
 TypeName = CPrimaryType
 Node = typing.Union[NoneNode,
                     Identifier,
