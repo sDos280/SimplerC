@@ -337,16 +337,18 @@ class If:
 
 
 class FunctionDeclaration:
-    def __init__(self, type_name: TypeName, declarator: Declarator, body: Node):
+    def __init__(self, type_name: TypeName, identifier: Identifier, parameters_declaration: list[Declaration], body: Node):
         self.type_name = type_name
-        self.declarator = declarator
+        self.identifier = identifier
+        self.parameter_declaration = parameters_declaration
         self.body = body
 
     def to_dict(self):
         return {
             "node": "FunctionDeclaration",
             "type_name": self.type_name.to_dict(),
-            "declarator": [self.declarator[0].to_dict(), self.declarator[1].to_dict()],
+            "identifier": self.identifier.to_dict(),
+            "parameters_declaration": [declaration.to_dict() for declaration in self.parameter_declaration],
             "body": self.body.to_dict()
         }
 
