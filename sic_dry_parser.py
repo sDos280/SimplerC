@@ -26,6 +26,9 @@ class DryParser:
         self.index -= 1
         self.current_token = self.lexer.tokens[self.index]
 
+    def get_token_by_offset(self, offset: int) -> tk.Token:
+        return self.lexer.tokens[self.index + offset]
+
     def is_token_kind(self, kind: tk.TokenKind | list[tk.TokenKind]) -> bool:
         if isinstance(kind, list):
             return self.current_token.kind in kind
