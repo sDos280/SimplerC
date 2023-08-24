@@ -747,11 +747,21 @@ class DryParser:
         else:
             self.fatal_token("Expected jump statement")
 
-    def peek_translation_unit(self):
-        pass
+    def peek_translation_unit(self) -> node.TranslationUnit:
+        translation_unit: node.TranslationUnit = []
 
-    def peek_external_declaration(self):
-        pass
+        while not self.is_token_kind(tk.TokenKind.END):
+            translation_unit.append(self.peek_external_declaration())
+
+        return translation_unit
+
+    def peek_external_declaration(self) -> node.ExternalDeclaration:
+        if self.is_token_kind(tk.TokenKind.FUNC):
+            return self.peek_function_definition()
+        elif self.is_token_type_specifier():
+            return self.peek_declaration()
+        else:
+            self.fatal_token("Expected external declaration")
 
     def peek_function_definition(self) -> node.FunctionDefinition | node.FunctionDeclaration:
         self.expect_token_kind(tk.TokenKind.FUNC, "Expected func keyword in function definition")
