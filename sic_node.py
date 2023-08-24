@@ -368,6 +368,19 @@ class FunctionDefinition:
         }
 
 
+class FunctionCall:
+    def __init__(self, identifier: Identifier, arguments: list[Node]):
+        self.identifier = identifier
+        self.arguments = arguments
+
+    def to_dict(self):
+        return {
+            "node": "FunctionCall",
+            "identifier": self.identifier.to_dict(),
+            "arguments": [argument.to_dict() for argument in self.arguments]
+        }
+
+
 TypeName = CPrimaryType
 Node = typing.Union[NoneNode,
                     Identifier,
@@ -386,7 +399,8 @@ Node = typing.Union[NoneNode,
                     CompoundStatement,
                     If,
                     FunctionDeclaration,
-                    FunctionDefinition
+                    FunctionDefinition,
+                    FunctionCall
 ]
 
 Declarator = typing.Union[typing.Tuple[Identifier, Node],
