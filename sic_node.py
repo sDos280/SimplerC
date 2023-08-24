@@ -393,4 +393,5 @@ Declarator = typing.Union[typing.Tuple[Identifier, Node],
                           typing.Tuple[NoneNode, NoneNode]  # for function parameter
 ]
 
-TranslationUnit = typing.Union[FunctionDefinition, FunctionDeclaration, CompoundStatement]
+ExternalDeclaration = typing.Union[FunctionDefinition, FunctionDeclaration, CompoundStatement]
+TranslationUnit = typing.List[ExternalDeclaration]
