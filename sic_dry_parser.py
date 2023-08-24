@@ -218,7 +218,21 @@ class DryParser:
 
                 return node.CUnaryOp(node.CUnaryOpKind.PreDecrease, unary_expression)
             case tk.TokenKind.SIZEOF:
-                assert False, "not implemented yet"
+                self.peek_token()  # peek sizeof token
+
+                if self.is_token_kind(tk.TokenKind.OPENING_PARENTHESIS):
+                    self.peek_token()  # peek ( token
+
+                    type_name: node.TypeName = self.peek_type_name()
+
+                    self.expect_token_kind(tk.TokenKind.CLOSING_PARENTHESIS, "Expected ')' in sizeof expression")
+                    self.peek_token()  # peek ) token
+
+                    return node.CUnaryOp(node.CUnaryOpKind.Sizeof, type_name)
+                else:
+                    unary_expression: node.Node = self.peek_unary_expression()
+
+                    return node.CUnaryOp(node.CUnaryOpKind.Sizeof, unary_expression)
             case tk.TokenKind.PLUS:
                 self.peek_token()  # peek + token
 
