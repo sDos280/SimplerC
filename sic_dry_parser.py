@@ -165,7 +165,17 @@ class DryParser:
         primary_expression: node.Node = self.peek_primary_expression()
 
         if self.is_token_kind(tk.TokenKind.OPENING_PARENTHESIS):
-            assert False, "not implemented yet"
+            self.peek_token()  # peek ( token
+
+            argument_expression_list: list[node.Node] = []
+
+            if not self.is_token_kind(tk.TokenKind.CLOSING_PARENTHESIS):
+                argument_expression_list = self.peek_argument_expression_list()
+
+            self.expect_token_kind(tk.TokenKind.CLOSING_PARENTHESIS, "Expected ')' in function call")
+            self.peek_token()  # peek ) token
+
+            return node.FunctionCall(primary_expression, argument_expression_list)
         elif self.is_token_kind(tk.TokenKind.INC_OP):
             self.peek_token()  # peek ++ token
 
