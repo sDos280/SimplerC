@@ -13,11 +13,11 @@ import sic_utils as utils
 import sic_lexer as lexer
 
 
-class :
+class ASTVisitor:
     def __init__(self, lexer: lexer.Lexer, translation_unit: node.TranslationUnit):
         self.lexer = lexer
         self.translation_unit = translation_unit
-        self.identifiers_stack: list[(node.Identifier, node.Node)] = []  # a stack of identifiers and their nodes
+        self.identifiers_stack: list[node.FunctionDefinition | node.FunctionDeclaration | node.Declarator] = []  # a stack of identifiers
 
     def fatal_duplicate_identifiers(self, duplicate_of: node.Identifier, duplicate: node.Identifier) -> None:
         duplicate_of_line_index: int = utils.get_line_index_by_char_index(self.lexer.string, duplicate_of.token.start)
@@ -59,7 +59,10 @@ class :
                 self.fatal_duplicate_identifiers(identifier_in_stack[0], external_declaration.identifier)
 
             # add the identifier to the stack
-            self.identifiers_stack.append((external_declaration.identifier, external_declaration))
+            if isinstance(external_declaration, (node.FunctionDefinition, node.FunctionDeclaration)):
+                self.identifiers_stack.append(external_declaration)
+            else:  # Variable Declaration
+                self.identifiers_stack.extend(external_declaration.declarators)  # add each identifier in the declaration to the stack
 
             if isinstance(external_declaration, node.FunctionDefinition):
                 self.visit_function_definition(external_declaration)
