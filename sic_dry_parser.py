@@ -525,25 +525,15 @@ class DryParser:
 
     def peek_declaration(self) -> node.Declaration:
         declaration_specifiers: node.TypeName = self.peek_declaration_specifiers()
-        init_declarator_list: list[node.Declarator] = self.peek_init_declarator_list()
+        init_declarator: node.Declarator = self.peek_init_declarator()
 
         self.expect_token_kind(tk.TokenKind.SEMICOLON, "Expected ';' in declaration")
         self.peek_token()  # peek the ; token
 
-        return node.Declaration(declaration_specifiers, init_declarator_list)
+        return node.Declaration(declaration_specifiers, init_declarator)
 
     def peek_declaration_specifiers(self) -> node.TypeName:
         return self.peek_specifier_list()
-
-    def peek_init_declarator_list(self) -> list[node.Declarator]:
-        init_declarator_list: list[node.Declarator] = [self.peek_init_declarator()]
-
-        while self.is_token_kind(tk.TokenKind.COMMA):
-            self.peek_token()  # peek the , token
-
-            init_declarator_list.append(self.peek_init_declarator())
-
-        return init_declarator_list
 
     def peek_init_declarator(self) -> node.Declarator:
         self.expect_token_kind(tk.TokenKind.IDENTIFIER, "Expected identifier in declaration")

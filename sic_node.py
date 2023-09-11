@@ -235,15 +235,15 @@ class Expression:
 
 
 class Declaration:
-    def __init__(self, type_name: TypeName, declarators: list[Declarator]):
+    def __init__(self, type_name: TypeName, declarator: Declarator):
         self.type_name = type_name
-        self.declarators = declarators
+        self.declarator = declarator
 
     def to_dict(self):
         return {
             "node": "Declaration",
             "type_name": self.type_name.to_dict(),
-            "declarators": [[declarator[0].to_dict(), declarator[1].to_dict()] for declarator in self.declarators]
+            "declarators": [self.declarator[0].to_dict(), self.declarator[1].to_dict()]
         }
 
 

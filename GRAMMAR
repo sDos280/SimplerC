@@ -133,17 +133,13 @@ constant_expression
 	;
 
 declaration
-	:  declaration_specifiers init_declarator_list ';'
+	:  declaration_specifiers init_declarator ';'
 	;
 
 declaration_specifiers
 	| specifier_list
 	;
 
-init_declarator_list
-	: init_declarator
-	| init_declarator_list ',' init_declarator
-	;
 
 init_declarator
 	: IDENTIFIER
