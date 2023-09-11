@@ -54,7 +54,7 @@ class ASTVisitor:
 
     def visit_translation_unit(self) -> None:
         for external_declaration in self.translation_unit:
-            # look if the external declaration identifiers is already in the stack
+            """# look if the external declaration identifiers is already in the stack
 
             identifier_in_stack = self.look_for_ed_identifier_in_stack(external_declaration.identifier)
 
@@ -62,7 +62,7 @@ class ASTVisitor:
                 self.fatal_duplicate_identifiers(identifier_in_stack.identifier, external_declaration.identifier)
 
             # add the identifier to the stack
-            self.external_declaration_stack.append(external_declaration)
+            self.external_declaration_stack.append(external_declaration)"""
 
             if isinstance(external_declaration, node.FunctionDefinition):
                 self.visit_fd(external_declaration)
@@ -71,3 +71,6 @@ class ASTVisitor:
 
         # pop the stack
         self.pop_stack_by(len(self.translation_unit))
+
+    def visit_declaration(self, declaration: node.Declaration) -> None:
+        # there is no need to check if the declaration is a duplicate, sense it is already checked in visit_translation_unit
