@@ -13,18 +13,13 @@ import sic_utils as utils
 import sic_lexer as lexer
 
 
+# ed - external declaration
+# fd - function definition or declaration
 class ASTVisitor:
     def __init__(self, lexer: lexer.Lexer, translation_unit: node.TranslationUnit):
         self.lexer = lexer
         self.translation_unit = translation_unit
         self.external_declaration_stack: list[node.ExternalDeclaration] = []  # a stack of external declaration
-
-    @staticmethod
-    def external_declaration_to_identifier(external_declaration: node.ExternalDeclaration) -> list[node.Identifier]:
-        if isinstance(external_declaration, node.Declaration):  # declaration
-            return [declarator[0] for declarator in external_declaration.declarators]
-        else:  # function definition or declaration
-            return [external_declaration.identifier]
 
     def fatal_duplicate_identifiers(self, duplicate_of: node.Identifier, duplicate: node.Identifier) -> None:
         duplicate_of_line_index: int = utils.get_line_index_by_char_index(self.lexer.string, duplicate_of.token.start)
@@ -47,16 +42,9 @@ class ASTVisitor:
         full_error_string += f"    {line_string}\n"
         raise SyntaxError(full_error_string)
 
-    def look_for_identifiers_in_stack(self, identifiers: list[node.Identifier]) -> node.ExternalDeclaration | None:
-        for identifier in identifiers:
-            identifier_in_stack = self.look_for_identifier_in_stack(identifier)
-            if identifier_in_stack is not None:
-                return identifier_in_stack
-        return None
-
-    def look_for_identifier_in_stack(self, identifier: node.Identifier) -> node.ExternalDeclaration | None:
+    def look_for_ed_identifier_in_stack(self, identifier: node.Identifier) -> node.ExternalDeclaration | None:
         for external_declaration in self.external_declaration_stack:
-            if identifier in self.external_declaration_to_identifier(external_declaration):
+            if external_declaration.identifier == identifier:
                 return external_declaration
         return None
 
@@ -66,21 +54,18 @@ class ASTVisitor:
 
     def visit_translation_unit(self) -> None:
         for external_declaration in self.translation_unit:
-            # look if the identifier is already in the stack
+            # look if the external declaration identifiers is already in the stack
 
-            identifier_in_stack = self.look_for_identifier_in_stack(self.external_declaration_to_identifier(external_declaration))
+            identifier_in_stack = self.look_for_ed_identifier_in_stack(external_declaration.identifier)
 
             if identifier_in_stack is not None:
-                self.fatal_duplicate_identifiers(self.external_declaration_to_identifier(identifier_in_stack), self.external_declaration_to_identifier(external_declaration))
+                self.fatal_duplicate_identifiers(identifier_in_stack.identifier, external_declaration.identifier)
 
             # add the identifier to the stack
-            if isinstance(external_declaration, (node.FunctionDefinition, node.FunctionDeclaration)):
-                self.external_declaration_stack.append(external_declaration)
-            else:  # Variable Declaration
-                self.external_declaration_stack.extend(external_declaration.declarators)  # add each identifier in the declaration to the stack
+            self.external_declaration_stack.append(external_declaration)
 
             if isinstance(external_declaration, node.FunctionDefinition):
-                self.visit_function_definition(external_declaration)
+                self.visit_fd(external_declaration)
             elif isinstance(external_declaration, node.Declaration):
                 self.visit_declaration(external_declaration)
 
