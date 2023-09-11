@@ -243,6 +243,10 @@ class Declaration:
     def identifier(self) -> Identifier:
         return self.declarator[0]
 
+    @property
+    def initializer(self) -> Node:
+        return self.declarator[1]
+
     def to_dict(self):
         return {
             "node": "Declaration",
