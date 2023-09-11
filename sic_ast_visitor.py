@@ -17,7 +17,14 @@ class ASTVisitor:
     def __init__(self, lexer: lexer.Lexer, translation_unit: node.TranslationUnit):
         self.lexer = lexer
         self.translation_unit = translation_unit
-        self.identifiers_stack: list[node.FunctionDefinition | node.FunctionDeclaration | node.Declarator] = []  # a stack of identifiers
+        self.external_declaration_stack: list[node.ExternalDeclaration] = []  # a stack of external declaration
+
+    @staticmethod
+    def external_declaration_to_identifier(external_declaration: node.ExternalDeclaration) -> node.Identifier:
+        if isinstance(external_declaration, node.Declarator):  # declarator
+            return external_declaration[0]
+        else:  # function definition or declaration
+            return external_declaration.identifier
 
     def fatal_duplicate_identifiers(self, duplicate_of: node.Identifier, duplicate: node.Identifier) -> None:
         duplicate_of_line_index: int = utils.get_line_index_by_char_index(self.lexer.string, duplicate_of.token.start)
@@ -40,19 +47,15 @@ class ASTVisitor:
         full_error_string += f"    {line_string}\n"
         raise SyntaxError(full_error_string)
 
-    def look_for_identifier_in_stack(self, identifier: node.Identifier) -> node.FunctionDefinition | node.FunctionDeclaration | node.Declarator | None:
-        for identifier_ in self.identifiers_stack:
-            if isinstance(identifier_, tuple):  # declarator
-                if identifier_[0] == identifier.token.string:
-                    return identifier_
-            else:  # function definition or declaration
-                if identifier_.identifier.token.string == identifier.token.string:
-                    return identifier_
+    def look_for_identifier_in_stack(self, identifier: node.Identifier) -> node.ExternalDeclaration | None:
+        for external_declaration in self.external_declaration_stack:
+            if self.external_declaration_to_identifier(external_declaration) == identifier:
+                return external_declaration
         return None
 
     def pop_stack_by(self, amount: int) -> None:
         for _ in range(amount):
-            self.identifiers_stack.pop()
+            self.external_declaration_stack.pop()
 
     def visit_translation_unit(self) -> None:
         for external_declaration in self.translation_unit:
@@ -71,9 +74,9 @@ class ASTVisitor:
 
             # add the identifier to the stack
             if isinstance(external_declaration, (node.FunctionDefinition, node.FunctionDeclaration)):
-                self.identifiers_stack.append(external_declaration)
+                self.external_declaration_stack.append(external_declaration)
             else:  # Variable Declaration
-                self.identifiers_stack.extend(external_declaration.declarators)  # add each identifier in the declaration to the stack
+                self.external_declaration_stack.extend(external_declaration.declarators)  # add each identifier in the declaration to the stack
 
             if isinstance(external_declaration, node.FunctionDefinition):
                 self.visit_function_definition(external_declaration)
