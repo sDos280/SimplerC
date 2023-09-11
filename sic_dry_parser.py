@@ -604,9 +604,9 @@ class DryParser:
         declaration_specifiers: node.TypeName = self.peek_declaration_specifiers()
 
         if self.is_token_kind(tk.TokenKind.IDENTIFIER):
-            return node.Declaration(declaration_specifiers, [(self.peek_identifier(), node.NoneNode())])
+            return node.Declaration(declaration_specifiers, (self.peek_identifier(), node.NoneNode()))
         else:
-            return node.Declaration(declaration_specifiers, [(node.NoneNode(), node.NoneNode())])
+            return node.Declaration(declaration_specifiers, (node.NoneNode(), node.NoneNode()))
 
     def peek_specifier_list(self) -> node.CPrimaryType:
         specifier_counter: node.CTypeSpecifier = node.CTypeSpecifier(0)

@@ -239,6 +239,10 @@ class Declaration:
         self.type_name = type_name
         self.declarator = declarator
 
+    @property
+    def identifier(self) -> Identifier:
+        return self.declarator[0]
+
     def to_dict(self):
         return {
             "node": "Declaration",
