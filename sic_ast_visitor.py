@@ -40,10 +40,14 @@ class ASTVisitor:
         full_error_string += f"    {line_string}\n"
         raise SyntaxError(full_error_string)
 
-    def look_for_identifier_in_stack(self, identifier: node.Identifier) -> tuple[node.Identifier, node.Node] | None:
-        for identifier_in_stack, node_in_stack in self.identifiers_stack:
-            if identifier.token.string == identifier_in_stack.token.string:
-                return identifier_in_stack, node_in_stack
+    def look_for_identifier_in_stack(self, identifier: node.Identifier) -> node.FunctionDefinition | node.FunctionDeclaration | node.Declarator | None:
+        for identifier_ in self.identifiers_stack:
+            if isinstance(identifier_, tuple):  # declarator
+                if identifier_[0] == identifier.token.string:
+                    return identifier_
+            else:  # function definition or declaration
+                if identifier_.identifier.token.string == identifier.token.string:
+                    return identifier_
         return None
 
     def pop_stack_by(self, amount: int) -> None:
@@ -53,10 +57,17 @@ class ASTVisitor:
     def visit_translation_unit(self) -> None:
         for external_declaration in self.translation_unit:
             # look if the identifier is already in the stack
-            identifier_in_stack = self.look_for_identifier_in_stack(external_declaration.identifier)
+            if isinstance(external_declaration, (node.FunctionDefinition, node.FunctionDeclaration)):
+                identifier_in_stack = self.look_for_identifier_in_stack(external_declaration.identifier)
 
-            if identifier_in_stack is not None:
-                self.fatal_duplicate_identifiers(identifier_in_stack[0], external_declaration.identifier)
+                if identifier_in_stack is not None:
+                    self.fatal_duplicate_identifiers(identifier_in_stack, external_declaration.identifier)
+            else:  # Variable Declaration
+                for declarator in external_declaration.declarators:
+                    identifier_in_stack = self.look_for_identifier_in_stack(declarator[0])
+
+                    if identifier_in_stack is not None:
+                        self.fatal_duplicate_identifiers(identifier_in_stack, declarator[0])
 
             # add the identifier to the stack
             if isinstance(external_declaration, (node.FunctionDefinition, node.FunctionDeclaration)):
