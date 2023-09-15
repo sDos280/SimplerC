@@ -156,3 +156,8 @@ class ASTVisitor:
     def visit_binary_expression(self, binary_expression: node.Node) -> None:
         # check if both left and right binary_expression are of the same type
         if self.get_expression_type(binary_expression.left) != self.get_expression_type(binary_expression.right):
+            raise SyntaxError("SimplerC : Type Error : the binary operator must have the same type for both expressions")
+
+        # visit the left and right binary_expression
+        self.visit_expression(binary_expression.left)
+        self.visit_expression(binary_expression.right)
