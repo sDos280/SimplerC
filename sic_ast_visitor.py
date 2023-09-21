@@ -158,6 +158,6 @@ class ASTVisitor:
         if self.get_expression_type(binary_expression.left) != self.get_expression_type(binary_expression.right):
             raise SyntaxError("SimplerC : Type Error : the binary operator must have the same type for both expressions")
 
-        # visit the left and right binary_expression
+        # visit the left and the right of the binary_expression
         self.visit_expression(binary_expression.left)
         self.visit_expression(binary_expression.right)
