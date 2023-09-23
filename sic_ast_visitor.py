@@ -202,10 +202,14 @@ class ASTVisitor:
 
         # check if the function call has the same number of arguments as the function definition
         if len(function_call.arguments) != len(identifier_in_stack.parameters_declaration):
-            self.fatal_wrong_number_of_arguments(function_call.identifier, len(identifier_in_stack.parameters_declaration), len(function_call.arguments))
+            raise SyntaxError("SimplerC : Type Error : the function call must have the same number of arguments as the function definition")
 
         # visit the arguments
-        for argument in function_call.arguments:
-            self.visit_expression(argument)
+        for index, argument in enumerate(function_call.arguments):
+            argument_type = self.visit_expression(argument)
+
+            # check if the argument type is the same as the parameter type
+            if argument_type != identifier_in_stack.parameters_declaration[index].type_name:
+                raise SyntaxError("SimplerC : Type Error : the function call argument type must be the same as the function definition parameter type")
 
         return identifier_in_stack.type_name
