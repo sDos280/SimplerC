@@ -44,7 +44,7 @@ class ASTVisitor:
 
     def look_for_ed_identifier_in_stack(self, identifier: node.Identifier) -> node.ExternalDeclaration | None:
         for external_declaration in self.external_declaration_stack:
-            if external_declaration.identifier == identifier:
+            if external_declaration.identifier.token.string == identifier.token.string:
                 return external_declaration
         return None
 
@@ -142,10 +142,13 @@ class ASTVisitor:
 
         # visit the declarator initializer
         if not isinstance(declaration.initializer, node.NoneNode):
-            self.visit_initializer(declaration.initializer)
+            initializer_type = self.visit_initializer(declaration.initializer)
 
-    def visit_initializer(self, initializer: node.Node) -> None:
-        self.visit_expression(initializer)
+            if initializer_type != declaration.type_name:
+                raise SyntaxError("SimplerC : Type Error : the initializer type must be the same as the declaration type")
+
+    def visit_initializer(self, initializer: node.Node) -> node.CPrimaryType:
+        return self.visit_expression(initializer)
 
     def visit_expression(self, expression: node.Node) -> node.CPrimaryType:
         """recursive function to visit an expression, return the type of the expression"""
