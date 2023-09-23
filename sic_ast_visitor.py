@@ -147,17 +147,48 @@ class ASTVisitor:
     def visit_initializer(self, initializer: node.Node) -> None:
         self.visit_expression(initializer)
 
-    def visit_expression(self, expression: node.Node) -> None:
+    def visit_expression(self, expression: node.Node) -> node.CPrimaryType:
+        """recursive function to visit an expression, return the type of the expression"""
         if isinstance(expression, node.CBinaryOp):
             self.visit_binary_expression(expression)
+        elif isinstance(expression, node.CharLiteral):
+            return self.get_expression_type(expression)
+        elif isinstance(expression, node.ConstantLiteral):
+            return self.get_expression_type(expression)
+        elif isinstance(expression, node.Identifier):
+            return self.get_expression_type(expression)  # the identifier type is in checked in the get_expression_type function
+        elif isinstance(expression, node.CUnaryOp):
+            return self.get_expression_type(expression)  # same as here
+        elif isinstance(expression, node.CCast):
+            return self.get_expression_type(expression)  # same as here
+        elif isinstance(expression, node.CTernaryOp):
+            return self.visit_ternary_expression(expression)
+        elif isinstance(expression, node.FunctionCall):
+            return self.visit_function_call(expression)
         else:
-            assert False, f"Not implemented yet"
+            raise SyntaxError("SimplerC : Type Error : the node in not an expression")
 
-    def visit_binary_expression(self, binary_expression: node.Node) -> None:
+    def visit_binary_expression(self, binary_expression: node.Node) -> node.CPrimaryType:
         # check if both left and right binary_expression are of the same type
-        if self.get_expression_type(binary_expression.left) != self.get_expression_type(binary_expression.right):
+        left_type: node.CPrimaryType = self.get_expression_type(binary_expression.left)
+        if left_type != self.get_expression_type(binary_expression.right):
             raise SyntaxError("SimplerC : Type Error : the binary operator must have the same type for both expressions")
 
         # visit the left and the right of the binary_expression
         self.visit_expression(binary_expression.left)
         self.visit_expression(binary_expression.right)
+
+        return left_type
+
+    def visit_ternary_expression(self, ternary_expression: node.Node) -> node.CPrimaryType:
+        # check if both true and false ternary_expression are of the same type
+        true_type: node.CPrimaryType = self.get_expression_type(ternary_expression.true_value)
+        if true_type != self.get_expression_type(ternary_expression.false_value):
+            raise SyntaxError("SimplerC : Type Error : the ternary operator must have the same type for both expressions")
+
+        # visit the true and the false of the ternary_expression
+        self.visit_expression(ternary_expression.true_value)
+        self.visit_expression(ternary_expression.false_value)
+
+        return true_type
+
