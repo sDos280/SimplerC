@@ -192,3 +192,20 @@ class ASTVisitor:
 
         return true_type
 
+    def visit_function_call(self, function_call: node.FunctionCall) -> node.CPrimaryType:
+        # look if the function call identifier is already in the stack
+
+        identifier_in_stack: node.FunctionDeclaration | node.FunctionDefinition = self.look_for_ed_identifier_in_stack(function_call.identifier)
+
+        if identifier_in_stack is None:
+            self.fatal_undeclared_identifier(function_call.identifier)
+
+        # check if the function call has the same number of arguments as the function definition
+        if len(function_call.arguments) != len(identifier_in_stack.parameters_declaration):
+            self.fatal_wrong_number_of_arguments(function_call.identifier, len(identifier_in_stack.parameters_declaration), len(function_call.arguments))
+
+        # visit the arguments
+        for argument in function_call.arguments:
+            self.visit_expression(argument)
+
+        return identifier_in_stack.type_name
