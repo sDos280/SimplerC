@@ -363,7 +363,7 @@ class FunctionDefinition:
     def __init__(self, type_name: TypeName, identifier: Identifier, parameters_declaration: list[Declaration], body: Node):
         self.type_name = type_name
         self.identifier = identifier
-        self.parameter_declaration = parameters_declaration
+        self.parameters_declaration = parameters_declaration
         self.body = body
 
     def to_dict(self):
@@ -371,7 +371,7 @@ class FunctionDefinition:
             "node": "FunctionDeclaration",
             "type_name": self.type_name.to_dict(),
             "identifier": self.identifier.to_dict(),
-            "parameters_declaration": [declaration.to_dict() for declaration in self.parameter_declaration],
+            "parameters_declaration": [declaration.to_dict() for declaration in self.parameters_declaration],
             "body": self.body.to_dict()
         }
 
