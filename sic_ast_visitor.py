@@ -111,16 +111,6 @@ class ASTVisitor:
 
     def visit_translation_unit(self) -> None:
         for external_declaration in self.translation_unit:
-            """# look if the external declaration identifiers is already in the stack
-
-            identifier_in_stack = self.look_for_ed_identifier_in_stack(external_declaration.identifier)
-
-            if identifier_in_stack is not None:
-                self.fatal_duplicate_identifiers(identifier_in_stack.identifier, external_declaration.identifier)
-
-            # add the identifier to the stack
-            self.external_declaration_stack.append(external_declaration)"""
-
             if isinstance(external_declaration, node.FunctionDefinition):
                 self.visit_fd(external_declaration)
             elif isinstance(external_declaration, node.Declaration):
@@ -128,6 +118,29 @@ class ASTVisitor:
 
         # pop the stack
         self.pop_stack_by(len(self.translation_unit))
+
+    def visit_fd(self, df: node.FunctionDefinition | node.FunctionDeclaration) -> None:
+        # look if the function identifier is already in the stack
+        identifier_in_stack = self.look_for_ed_identifier_in_stack(df.identifier)
+
+        if identifier_in_stack is not None:
+            self.fatal_duplicate_identifiers(identifier_in_stack.identifier, df.identifier)
+
+        # add the identifier to the stack
+        self.external_declaration_stack.append(df)
+
+        # if the function is a definition, add the parameters to the stack
+        if isinstance(df, node.FunctionDefinition):
+            for parameter in df.parameters_declaration:
+                identifier_in_stack = self.look_for_ed_identifier_in_stack(parameter.identifier)
+
+                if identifier_in_stack is not None:
+                    self.fatal_duplicate_identifiers(identifier_in_stack.identifier, parameter.identifier)
+
+                self.external_declaration_stack.append(parameter)
+
+        # visit the function body
+        self.visit_compound_statement(df.body)
 
     def visit_declaration(self, declaration: node.Declaration) -> None:
         # look if the declaration identifier is already in the stack
