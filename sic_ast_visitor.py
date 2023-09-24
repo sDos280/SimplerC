@@ -42,6 +42,14 @@ class ASTVisitor:
         full_error_string += f"    {line_string}\n"
         raise SyntaxError(full_error_string)
 
+    def fatal_function_return_type_mismatch(self, function: node.FunctionDefinition, return_type: node.CPrimaryType) -> None:
+        line_index: int = utils.get_line_index_by_char_index(self.lexer.string, function.identifier.token.start)
+        line_string: str = utils.get_line_by_index(self.lexer.string, line_index)
+
+        full_error_string = f"SimplerC : Function Return Type Mismatch : the function {function.identifier.token.string} was declared with return type {function.type_name} but returns {return_type} in :\n"
+        full_error_string += f"    {line_string}\n"
+        raise SyntaxError(full_error_string)
+
     def look_for_ed_identifier_in_stack(self, identifier: node.Identifier) -> node.ExternalDeclaration | None:
         for external_declaration in self.external_declaration_stack:
             if external_declaration.identifier.token.string == identifier.token.string:
@@ -160,9 +168,13 @@ class ASTVisitor:
                 self.external_declaration_stack.append(parameter)
 
             # visit the function body
-            self.visit_compound_statement(df.body, check_for_return=True)
+            return_type: node.CPrimaryType = self.visit_compound_statement(df.body, check_for_return=True)
 
-    def visit_compound_statement(self, compound_statement: node.CompoundStatement, check_for_return: bool = False) -> None:
+            if return_type != df.type_name:
+                self.fatal_function_return_type_mismatch(df.identifier, df.type_name, return_type)
+
+    def visit_compound_statement(self, compound_statement: node.CompoundStatement, check_for_return: bool = False) -> node.CPrimaryType:
+        # if check_for_return is true, return the function return type
         # make sure there are no duplicate identifiers in the compound statement
         for declaration in compound_statement.declarations:
             identifier_in_stack = self.look_for_ed_identifier_in_stack(declaration.identifier)
@@ -177,6 +189,11 @@ class ASTVisitor:
         for statement in compound_statement.statements:
             if isinstance(statement, node.Return):
                 is_return_statement_found = True
+
+                if not isinstance(statement.expression, node.NoneNode):
+                    return self.visit_expression(statement.expression)
+                else:
+                    return node.CPrimaryType.VOID
 
             self.visit_statement(statement)
 
