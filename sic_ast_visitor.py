@@ -178,13 +178,46 @@ class ASTVisitor:
             if isinstance(statement, node.Return):
                 is_return_statement_found = True
 
-            self.visit_statement(statement, check_for_return)
+            self.visit_statement(statement)
 
         if check_for_return and not is_return_statement_found:
             raise SyntaxError("SimplerC : Type Error : the compound statement must contain return statement")
 
         # pop the stack
         self.pop_stack_by(len(compound_statement.declarations))
+
+    def visit_statement(self, statement: node.StatementTypes):
+        if isinstance(statement, node.CompoundStatement):
+            self.visit_compound_statement(statement)
+            # elif isinstance(statement, node.Continue):  # no need to check that
+            # elif isinstance(statement, node.Break):  # no need to check that
+            # elif isinstance(statement, node.Return):  # there is no need to check that here, it is checked in visit_compound_statement
+        elif isinstance(statement, node.While):
+            self.visit_while(statement)
+        elif isinstance(statement, node.For):
+            self.visit_for(statement)
+        elif isinstance(statement, node.If):
+            self.visit_if(statement)
+
+    def visit_while(self, while_statement: node.While) -> None:
+        self.visit_expression(while_statement.condition)
+
+        self.visit_statement(while_statement.body)
+
+    def visit_for(self, for_statement: node.For) -> None:
+        self.visit_expression(for_statement.init)
+        self.visit_expression(for_statement.condition)
+        self.visit_expression(for_statement.update)
+
+        self.visit_statement(for_statement.body)
+
+    def visit_if(self, if_statement: node.If) -> None:
+        self.visit_expression(if_statement.condition)
+
+        self.visit_statement(if_statement.body)
+
+        if not isinstance(if_statement.else_body, node.NoneNode):
+            self.visit_statement(if_statement.else_body)
 
     def visit_declaration(self, declaration: node.Declaration) -> None:
         # look if the declaration identifier is already in the stack
