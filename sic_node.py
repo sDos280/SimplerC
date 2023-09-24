@@ -423,6 +423,18 @@ ExpressionTypes = typing.Union[
     FunctionCall,
 ]
 
+StatementTypes = typing.Union[
+    NoneNode,
+    ExpressionTypes,
+    Expression,
+    Continue,
+    Break,
+    Return,
+    While,
+    For,
+    If,
+]
+
 Declarator = typing.Union[typing.Tuple[Identifier, Node],
                           typing.Tuple[NoneNode, NoneNode]  # for function parameter
 ]
