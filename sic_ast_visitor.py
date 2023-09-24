@@ -48,6 +48,11 @@ class ASTVisitor:
                 return external_declaration
         return None
 
+    def look_for_all_ed_identifier_in_stack(self, identifier: node.Identifier) -> list[node.ExternalDeclaration]:
+        for external_declaration in self.external_declaration_stack:
+            if external_declaration.identifier.token.string == identifier.token.string:
+                yield external_declaration
+
     def pop_stack_by(self, amount: int) -> None:
         for _ in range(amount):
             self.external_declaration_stack.pop()
@@ -120,17 +125,32 @@ class ASTVisitor:
         self.pop_stack_by(len(self.translation_unit))
 
     def visit_fd(self, df: node.FunctionDefinition | node.FunctionDeclaration) -> None:
-        # look if the function identifier is already in the stack
-        identifier_in_stack = self.look_for_ed_identifier_in_stack(df.identifier)
+        if isinstance(df, node.FunctionDeclaration):
+            # make sure that there is only one function declaration with the same identifier
+            # (we won't care here about duplicate function definitions)
+            # we don't care here about the function parameters, only the function identifier
+            identifiers_in_stack: list[node.FunctionDefinition | node.FunctionDeclaration] = self.look_for_all_ed_identifier_in_stack(df.identifier)
 
-        if identifier_in_stack is not None:
-            self.fatal_duplicate_identifiers(identifier_in_stack.identifier, df.identifier)
+            if len(identifiers_in_stack) != 0:
+                for identifier_in_stack in identifiers_in_stack:
+                    if isinstance(identifier_in_stack, node.FunctionDeclaration):
+                        self.fatal_duplicate_identifiers(identifier_in_stack.identifier, df.identifier)
 
-        # add the identifier to the stack
-        self.external_declaration_stack.append(df)
+            # add the identifier to the stack
+            self.external_declaration_stack.append(df)
+        else:
+            # make sure that there is only one function definition with the same identifier
+            identifiers_in_stack: list[node.FunctionDefinition | node.FunctionDeclaration] = self.look_for_all_ed_identifier_in_stack(df.identifier)
 
-        # if the function is a definition, add the parameters to the stack
-        if isinstance(df, node.FunctionDefinition):
+            if len(identifiers_in_stack) != 0:
+                for identifier_in_stack in identifiers_in_stack:
+                    if isinstance(identifier_in_stack, node.FunctionDefinition):
+                        self.fatal_duplicate_identifiers(identifier_in_stack.identifier, df.identifier)
+
+            # add the identifier to the stack
+            self.external_declaration_stack.append(df)
+
+            # add the parameters to the stack
             for parameter in df.parameters_declaration:
                 identifier_in_stack = self.look_for_ed_identifier_in_stack(parameter.identifier)
 
@@ -139,8 +159,8 @@ class ASTVisitor:
 
                 self.external_declaration_stack.append(parameter)
 
-        # visit the function body
-        self.visit_compound_statement(df.body)
+            # visit the function body
+            self.visit_compound_statement(df.body)
 
     def visit_declaration(self, declaration: node.Declaration) -> None:
         # look if the declaration identifier is already in the stack
