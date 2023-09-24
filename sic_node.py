@@ -425,6 +425,7 @@ ExpressionTypes = typing.Union[
 
 StatementTypes = typing.Union[
     NoneNode,
+    CompoundStatement,
     ExpressionTypes,
     Expression,
     Continue,
