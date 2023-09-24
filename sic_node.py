@@ -411,6 +411,18 @@ Node = typing.Union[NoneNode,
                     FunctionCall
 ]
 
+ExpressionTypes = typing.Union[
+    NoneNode,
+    CBinaryOp,
+    CharLiteral,
+    ConstantLiteral,
+    Identifier,
+    CUnaryOp,
+    CCast,
+    CTernaryOp,
+    FunctionCall,
+]
+
 Declarator = typing.Union[typing.Tuple[Identifier, Node],
                           typing.Tuple[NoneNode, NoneNode]  # for function parameter
 ]
