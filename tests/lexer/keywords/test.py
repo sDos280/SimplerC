@@ -31,4 +31,4 @@ keywords_token_kind = [
 
 for token in lexer.tokens:
     if token.kind not in keywords_token_kind and token.kind != sic_token.TokenKind.END:
-        print("The token " + token.string + " is not an identifier", file=sys.stderr)
+        print("The token " + token.string + " is not an keyword", file=sys.stderr)
