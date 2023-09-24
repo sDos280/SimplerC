@@ -160,7 +160,31 @@ class ASTVisitor:
                 self.external_declaration_stack.append(parameter)
 
             # visit the function body
-            self.visit_compound_statement(df.body)
+            self.visit_compound_statement(df.body, check_for_return=True)
+
+    def visit_compound_statement(self, compound_statement: node.CompoundStatement, check_for_return: bool = False) -> None:
+        # make sure there are no duplicate identifiers in the compound statement
+        for declaration in compound_statement.declarations:
+            identifier_in_stack = self.look_for_ed_identifier_in_stack(declaration.identifier)
+
+            if identifier_in_stack is not None:
+                self.fatal_duplicate_identifiers(identifier_in_stack.identifier, declaration.identifier)
+
+            self.external_declaration_stack.append(declaration)
+
+        is_return_statement_found = False
+        # visit the statements
+        for statement in compound_statement.statements:
+            if isinstance(statement, node.Return):
+                is_return_statement_found = True
+
+            self.visit_statement(statement, check_for_return)
+
+        if check_for_return and not is_return_statement_found:
+            raise SyntaxError("SimplerC : Type Error : the compound statement must contain return statement")
+
+        # pop the stack
+        self.pop_stack_by(len(compound_statement.declarations))
 
     def visit_declaration(self, declaration: node.Declaration) -> None:
         # look if the declaration identifier is already in the stack
