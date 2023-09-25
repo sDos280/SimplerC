@@ -260,10 +260,13 @@ class ASTVisitor:
     def visit_initializer(self, initializer: node.Node) -> node.CPrimaryType:
         return self.visit_expression(initializer)
 
-    def visit_expression(self, expression: node.Node) -> node.CPrimaryType:
+    def visit_expression(self, expression: node.ExpressionTypes) -> node.CPrimaryType:
         """recursive function to visit an expression, return the type of the expression"""
         if isinstance(expression, node.CBinaryOp):
             self.visit_binary_expression(expression)
+        elif isinstance(expression, node.Expression):
+            for expression in expression.expressions:
+                self.visit_expression(expression)
         elif isinstance(expression, node.CharLiteral):
             return self.get_expression_type(expression)
         elif isinstance(expression, node.ConstantLiteral):
