@@ -661,7 +661,7 @@ class DryParser:
 
         # '{' declaration_list '}'  |  '{' declaration_list '}'  |  '{' declaration_list statement_list '}'
         if self.is_token_type_specifier():
-            compound_statement.declaration_list = self.peek_declaration_list()
+            compound_statement.declarations = self.peek_declaration_list()
 
         while not self.is_token_kind(tk.TokenKind.CLOSING_CURLY_BRACE):
             compound_statement.statements.append(self.peek_statement())
