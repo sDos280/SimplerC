@@ -171,10 +171,11 @@ class ASTVisitor:
                 self.external_declaration_stack.append(parameter)
 
             # visit the function body
-            return_type: node.CPrimaryType = self.visit_compound_statement(df.body, check_for_return=True)
+            self.visit_compound_statement(df.body)
 
-            if return_type != df.type_name:
-                self.fatal_function_return_type_mismatch(df.identifier, df.type_name, return_type)
+            # pop the stack
+            # we only pop the parameters, the function identifier will be popped in the visit_translation_unit
+            self.pop_stack_by(len(df.parameters_declaration))
 
     def visit_compound_statement(self, compound_statement: node.CompoundStatement) -> None:
         # if check_for_return is true, return the function return type
