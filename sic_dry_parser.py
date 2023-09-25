@@ -757,12 +757,14 @@ class DryParser:
             self.peek_token()  # peek continue token
 
             self.expect_token_kind(tk.TokenKind.SEMICOLON, "Expected ';' in continue statement")
+            self.peek_token()  # peek ; token
 
             return node.Continue()
         elif self.is_token_kind(tk.TokenKind.BREAK):
             self.peek_token()  # peek break token
 
             self.expect_token_kind(tk.TokenKind.SEMICOLON, "Expected ';' in continue statement")
+            self.peek_token()  # peek ; token
 
             return node.Break()
         elif self.is_token_kind(tk.TokenKind.RETURN):
@@ -771,6 +773,7 @@ class DryParser:
             expression: node.Expression = self.peek_expression()
 
             self.expect_token_kind(tk.TokenKind.SEMICOLON, "Expected ';' in continue statement")
+            self.peek_token()  # peek ; token
 
             return node.Return(expression)
         else:
