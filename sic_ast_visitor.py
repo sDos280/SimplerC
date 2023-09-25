@@ -57,9 +57,12 @@ class ASTVisitor:
         return None
 
     def look_for_all_ed_identifier_in_stack(self, identifier: node.Identifier) -> list[node.ExternalDeclaration]:
+        external_declaration_list: list[node.ExternalDeclaration] = []
         for external_declaration in self.external_declaration_stack:
             if external_declaration.identifier.token.string == identifier.token.string:
-                yield external_declaration
+                external_declaration_list.append(external_declaration)
+
+        return external_declaration_list
 
     def pop_stack_by(self, amount: int) -> None:
         for _ in range(amount):
