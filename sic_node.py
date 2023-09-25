@@ -413,6 +413,7 @@ Node = typing.Union[NoneNode,
 
 ExpressionTypes = typing.Union[
     NoneNode,
+    Expression,
     CBinaryOp,
     CharLiteral,
     ConstantLiteral,
