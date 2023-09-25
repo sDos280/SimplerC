@@ -236,7 +236,8 @@ class ASTVisitor:
             self.visit_statement(if_statement.else_body)
 
     def visit_declaration(self, declaration: node.Declaration) -> None:
-        # look if the declaration identifier is already in the stack
+        # we shouldn't check for duplicate identifiers here, because it's the job the compound statement
+        """# look if the declaration identifier is already in the stack
 
         identifier_in_stack = self.look_for_ed_identifier_in_stack(declaration.identifier)
 
@@ -244,7 +245,7 @@ class ASTVisitor:
             self.fatal_duplicate_identifiers(identifier_in_stack.identifier, declaration.identifier)
 
         # add the identifier to the stack
-        self.external_declaration_stack.append(declaration)
+        self.external_declaration_stack.append(declaration)"""
 
         # visit the declarator initializer
         if not isinstance(declaration.initializer, node.NoneNode):
