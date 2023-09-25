@@ -257,7 +257,7 @@ class ASTVisitor:
             if initializer_type != declaration.type_name:
                 raise SyntaxError("SimplerC : Type Error : the initializer type must be the same as the declaration type")
 
-    def visit_initializer(self, initializer: node.Node) -> node.CPrimaryType:
+    def visit_initializer(self, initializer: node.ExpressionTypes) -> node.CPrimaryType:
         return self.visit_expression(initializer)
 
     def visit_expression(self, expression: node.ExpressionTypes) -> node.CPrimaryType:
@@ -284,7 +284,7 @@ class ASTVisitor:
         else:
             raise SyntaxError("SimplerC : Type Error : the node in not an expression")
 
-    def visit_binary_expression(self, binary_expression: node.Node) -> node.CPrimaryType:
+    def visit_binary_expression(self, binary_expression: node.CBinaryOp) -> node.CPrimaryType:
         # check if both left and right binary_expression are of the same type
         left_type: node.CPrimaryType = self.get_expression_type(binary_expression.left)
         if left_type != self.get_expression_type(binary_expression.right):
@@ -296,7 +296,7 @@ class ASTVisitor:
 
         return left_type
 
-    def visit_ternary_expression(self, ternary_expression: node.Node) -> node.CPrimaryType:
+    def visit_ternary_expression(self, ternary_expression: node.CTernaryOp) -> node.CPrimaryType:
         # check if both true and false ternary_expression are of the same type
         true_type: node.CPrimaryType = self.get_expression_type(ternary_expression.true_value)
         if true_type != self.get_expression_type(ternary_expression.false_value):
