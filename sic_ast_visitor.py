@@ -176,7 +176,7 @@ class ASTVisitor:
             if return_type != df.type_name:
                 self.fatal_function_return_type_mismatch(df.identifier, df.type_name, return_type)
 
-    def visit_compound_statement(self, compound_statement: node.CompoundStatement, check_for_return: bool = False) -> node.CPrimaryType:
+    def visit_compound_statement(self, compound_statement: node.CompoundStatement) -> None:
         # if check_for_return is true, return the function return type
         # make sure there are no duplicate identifiers in the compound statement
         for declaration in compound_statement.declarations:
@@ -187,21 +187,10 @@ class ASTVisitor:
 
             self.external_declaration_stack.append(declaration)
 
-        is_return_statement_found = False
-        # visit the statements
+            self.visit_declaration(declaration)
+
         for statement in compound_statement.statements:
-            if isinstance(statement, node.Return):
-                is_return_statement_found = True
-
-                if not isinstance(statement.expression, node.NoneNode):
-                    return self.visit_expression(statement.expression)
-                else:
-                    return node.CPrimaryType.VOID
-
             self.visit_statement(statement)
-
-        if check_for_return and not is_return_statement_found:
-            raise SyntaxError("SimplerC : Type Error : the compound statement must contain return statement")
 
         # pop the stack
         self.pop_stack_by(len(compound_statement.declarations))
