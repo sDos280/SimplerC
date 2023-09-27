@@ -31,7 +31,7 @@ class Emitter:
 
         self.module = ir.Module()
 
-        self.identifiers_table = {}
+        self.identifiers_table: dict[str, ...] = {}
 
     # -------------------------------------------------------
     # helper functions
@@ -69,9 +69,17 @@ class Emitter:
     def emit_function_definition(self, function_definition: node.FunctionDefinition) -> ir.Function:
         function_type = self.emit_function_type(function_definition)
         function_ir = ir.Function(self.module, function_type, name=function_definition.identifier.token.string)
+        for parameter_name, parameter_ir in zip(function_definition.parameters_declaration, function_ir.args):
+            parameter_ir.name = parameter_name.identifier.token.string
+            self.identifiers_table[parameter_name.identifier.token.string] = parameter_ir
+
         self.ir_scope.current_function = function_ir
         self.sic_scope.current_function = function_definition
         self.emit_function_body(function_definition)
+
+        # clear the scope
+        for parameter_name in function_definition.parameters_declaration:
+            del self.identifiers_table[parameter_name.identifier.token.string]
 
         self.ir_scope.current_function = None
         self.sic_scope.current_function = None
