@@ -33,6 +33,27 @@ class Emitter:
 
         self.identifiers_table = {}
 
+    # -------------------------------------------------------
+    # helper functions
+    def sic_type_to_ir_type(self, sic_type: node.TypeName) -> ir.Type:
+        match sic_type:
+            case node.TypeName.VOID:
+                return ir.VoidType()
+            case node.TypeName.CHAR:
+                return ir.IntType(8)
+            case node.TypeName.SHORT:
+                return ir.IntType(16)
+            case node.TypeName.INT:
+                return ir.IntType(32)
+            case node.TypeName.LONG:
+                return ir.IntType(64)
+            case node.TypeName.FLOAT:
+                return ir.FloatType()
+            case node.TypeName.DOUBLE:
+                return ir.DoubleType()
+
+    # -------------------------------------------------------
+    # emit functions
     def emit_translation_unit(self):
         for external_declaration in self.translation_unit:
             self.emit_external_declaration(external_declaration)
@@ -55,3 +76,9 @@ class Emitter:
         self.ir_scope.current_function = None
         self.sic_scope.current_function = None
         return function_ir
+
+    def emit_function_type(self, function_definition: node.FunctionDefinition) -> ir.FunctionType:
+        return_type_ir = self.sic_type_to_ir_type(function_definition.type_name)
+        parameter_types_ir = [self.sic_type_to_ir_type(parameter_declaration.type_name) for parameter_declaration in function_definition.parameters_declaration]
+
+        return ir.FunctionType(return_type_ir, parameter_types_ir)
