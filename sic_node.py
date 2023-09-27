@@ -15,13 +15,13 @@ class NoneNode:
 class CPrimaryType(enum.Enum):
     VOID = enum.auto()  # 'void'
     CHAR = enum.auto()  # 'char' or 'signed char'
-    UCHAR = enum.auto()  # 'unsigned char'
+    # UCHAR = enum.auto()  # 'unsigned char'
     SHORT = enum.auto()  # 'short' or 'short int' or 'signed short' or 'signed short int'
-    USHORT = enum.auto()  # 'unsigned short'
+    # USHORT = enum.auto()  # 'unsigned short'
     INT = enum.auto()  # 'int' or 'signed' or 'signed int'
-    UINT = enum.auto()  # 'unsigned' or 'unsigned int'
+    # UINT = enum.auto()  # 'unsigned' or 'unsigned int'
     LONG = enum.auto()  # 'long' or 'long int' or 'signed long' or 'signed long int'
-    ULONG = enum.auto()  # 'unsigned long'
+    # ULONG = enum.auto()  # 'unsigned long'
     FLOAT = enum.auto()  # 'float'
     DOUBLE = enum.auto()  # 'double'
 
