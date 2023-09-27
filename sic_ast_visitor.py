@@ -30,7 +30,7 @@ class ASTVisitor:
 
         full_error_string = f"SimplerC : Duplicate Identifiers : the identifier {duplicate.token.string} was declared in :\n"
         full_error_string += f"    {duplicate_of_line_string}\n"
-        full_error_string = f"SimplerC : Duplicate Identifiers : but is declared again in:\n"
+        full_error_string += f"SimplerC : Duplicate Identifiers : but is declared again in:\n"
         full_error_string += f"    {duplicate_line_string}\n"
         raise SyntaxError(full_error_string)
 
