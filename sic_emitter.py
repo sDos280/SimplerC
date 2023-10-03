@@ -63,9 +63,28 @@ class Emitter:
             elif isinstance(external_declaration, node.Declaration):
                 self.emit_declaration(external_declaration)
 
+    def emit_declaration(self, declaration: node.Declaration):
+        # create declaration block
+        declaration_block = self.cfb.append_basic_block(name=f'{declaration.identifier.token.string}.declaration')
+
+        with self.cfb.goto_block(declaration_block):
+            # create declaration variable
+            ir_type = self.sic_type_to_ir_type(declaration.type_name)
+            ir_variable = self.cfb.alloca(ir_type, name=declaration.identifier.token.string)
+
+            # add to identifiers table
+            self.identifiers_table[declaration.identifier.token.string] = ir_variable
+
+            # emit initializer
+            if not isinstance(declaration.initializer, node.NoneNode):
+                ir_initializer = self.emit_expression(declaration.initializer)
+                self.cfb.store(ir_initializer, ir_variable)
+
+        return declaration_block
+
     def emit_if_statement(self, if_statement: node.If) -> ir.Block:
-        # create new if block
-        if_block: ir.Block = self.cfb.append_basic_block()
+        # create if block
+        if_block: ir.Block = self.cfb.append_basic_block(name='if')
 
         with self.cfb.goto_block(if_block):
             ir_condition = self.emit_expression(if_statement.condition)
@@ -86,6 +105,7 @@ class Emitter:
                         self.cfb.position_at_end(statement)
 
         return if_block
+
     # -------------------------------------------------------
 
     # -------------------------------------------------------
