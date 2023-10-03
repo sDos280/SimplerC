@@ -63,7 +63,7 @@ class Emitter:
             elif isinstance(external_declaration, node.Declaration):
                 self.emit_declaration(external_declaration)
 
-    def emit_if_statement(self, if_statement: node.If):
+    def emit_if_statement(self, if_statement: node.If) -> ir.Block:
         # create new if block
         if_block: ir.Block = self.cfb.append_basic_block()
 
@@ -73,14 +73,17 @@ class Emitter:
             if isinstance(if_statement.else_body, node.NoneNode):
                 # there is no else body
                 with self.cfb.if_then(ir_condition):
-                    self.add_statement(if_statement.body)
+                    statement = self.emit_compound_statement(if_statement.body)
+                    self.cfb.position_at_end(statement)
             else:
                 # there is an else body
                 with self.cfb.if_else(ir_condition) as (then, otherwise):
                     with then:
-                        self.add_statement(if_statement.body)
+                        statement = self.emit_compound_statement(if_statement.body)
+                        self.cfb.position_at_end(statement)
                     with otherwise:
-                        self.add_statement(if_statement.else_body)
+                        statement = self.emit_compound_statement(if_statement.else_body)
+                        self.cfb.position_at_end(statement)
 
         return if_block
     # -------------------------------------------------------
