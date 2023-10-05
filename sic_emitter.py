@@ -63,6 +63,8 @@ class Emitter:
             elif isinstance(external_declaration, node.Declaration):
                 self.emit_declaration(external_declaration)
 
+    def emit_expression(self, expression: node.ExpressionTypes, create_block: False):
+
     def emit_declaration(self, declaration: node.Declaration):
         # create declaration block
         declaration_block = self.cfb.append_basic_block(name=f'{declaration.identifier.token.string}.declaration')
@@ -77,7 +79,7 @@ class Emitter:
 
             # emit initializer
             if not isinstance(declaration.initializer, node.NoneNode):
-                ir_initializer = self.emit_expression(declaration.initializer)
+                ir_initializer = self.emit_expression(declaration.initializer, create_block=False)
                 self.cfb.store(ir_initializer, ir_variable)
 
         return declaration_block
@@ -105,6 +107,35 @@ class Emitter:
                         self.cfb.position_at_end(statement)
 
         return if_block
+
+    def emit_expression(self, expression: node.ExpressionTypes) -> ir.Value:
+        # assignment expression will be inlined to the block
+
+        if isinstance(expression, node.CBinaryOp):
+            return self.emit_binary_operator(expression)
+        elif isinstance(expression, node.Expression):
+            for expression in expression.expressions:
+                return self.visit_expression(expression)
+        elif isinstance(expression, node.CUnaryOp):
+            assert False, "not implemented"
+        elif isinstance(expression, node.CCast):
+            assert False, "not implemented"
+        elif isinstance(expression, node.CTernaryOp):
+            assert False, "not implemented"
+        elif isinstance(expression, node.FunctionCall):
+            assert False, "not implemented"
+        elif isinstance(expression, node.CharLiteral):
+            return ir.Constant(ir.IntType(8), ord(expression.token.string[1]))
+        elif isinstance(expression, node.ConstantLiteral):
+            if expression.token.string.find('.') == 1:  # a constant float literal
+                return ir.Constant(ir.FloatType(), float(expression.token.string))
+            else:  # a constant int literal
+                return ir.Constant(ir.IntType(32), int(expression.token.string))
+        elif isinstance(expression, node.Identifier):
+            # return the ir variable of the identifier
+            return self.identifiers_table[expression.token.string]
+        else:
+            raise SyntaxError("SimplerC : Type Error : the node in not an expression")
 
     # -------------------------------------------------------
 
