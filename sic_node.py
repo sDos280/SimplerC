@@ -278,13 +278,15 @@ class Break:
 
 
 class Return:
-    def __init__(self, expression: Node):
+    def __init__(self, expression: Node, token: tk.Token):
         self.expression = expression
+        self.token = token
 
     def to_dict(self):
         return {
             "node": "Return",
-            "expression": self.expression.to_dict()
+            "expression": self.expression.to_dict(),
+            "token": self.token.string,
         }
 
 

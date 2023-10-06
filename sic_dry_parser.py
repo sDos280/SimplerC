@@ -770,14 +770,15 @@ class DryParser:
 
             return break_node
         elif self.is_token_kind(tk.TokenKind.RETURN):
+            return_node: node.Return = node.Return(node.NoneNode(), self.current_token)
             self.peek_token()  # peek return token
 
-            expression: node.Expression = self.peek_expression()
+            return_node.expression = self.peek_expression()
 
             self.expect_token_kind(tk.TokenKind.SEMICOLON, "Expected ';' in return statement")
             self.peek_token()  # peek ; token
 
-            return node.Return(expression)
+            return return_node
         else:
             self.fatal_token("Expected jump statement")
 
