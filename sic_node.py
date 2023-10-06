@@ -441,6 +441,12 @@ StatementTypes = typing.Union[
     If,
 ]
 
+JumpStatementTypes = typing.Union[
+    Continue,
+    Break,
+    Return,
+]
+
 Declarator = typing.Union[typing.Tuple[Identifier, Node],
                           typing.Tuple[NoneNode, NoneNode]  # for function parameter
 ]
