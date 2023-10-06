@@ -65,7 +65,7 @@ class Emitter:
             else:
                 return node.CPrimaryType.INT
         elif isinstance(expression, node.Identifier):
-            identifier_in_stack: node.Declaration = self.look_for_ed_string_in_stack(expression.token.string)[0]
+            identifier_in_stack: node.Declaration = self.look_for_ed_identifier_in_stack(expression).declaration
 
             if identifier_in_stack is None:
                 raise SyntaxError("SimplerC : Some Thing Went Wrong: ...")
@@ -104,7 +104,7 @@ class Emitter:
         return self.get_expression_type(expression.true_value)
 
     def get_function_call_type(self, expression: node.FunctionCall) -> node.CPrimaryType:
-        identifier_in_stack: node.FunctionDefinition = self.look_for_ed_string_in_stack(expression.identifier.token.string)[0]
+        identifier_in_stack: node.FunctionDefinition = self.look_for_ed_identifier_in_stack(expression.identifier).declaration
 
         if identifier_in_stack is None:
             raise SyntaxError("SimplerC : Some Thing Went Wrong: ...")
