@@ -128,9 +128,6 @@ class Emitter:
             elif isinstance(external_declaration, node.Declaration):
                 self.emit_declaration(external_declaration)
 
-    def emit_expression(self, expression: node.ExpressionTypes, create_block: False):
-        pass
-
     def emit_declaration(self, declaration: node.Declaration):
         # create declaration block
         declaration_block = self.cfb.append_basic_block(name=f'{declaration.identifier.token.string}.declaration')
@@ -146,34 +143,29 @@ class Emitter:
 
             # emit initializer
             if not isinstance(declaration.initializer, node.NoneNode):
-                ir_initializer = self.emit_expression(declaration.initializer, create_block=False)
+                ir_initializer = self.emit_expression(declaration.initializer)
                 self.cfb.store(ir_initializer, ir_variable)
 
         return declaration_block
 
-    def emit_if_statement(self, if_statement: node.If) -> ir.Block:
-        # create if block
-        if_block: ir.Block = self.cfb.append_basic_block(name='if')
+    def emit_if_statement(self, if_statement: node.If) -> None:
+        # inline if statement
+        ir_condition = self.emit_expression(if_statement.condition)
 
-        with self.cfb.goto_block(if_block):
-            ir_condition = self.emit_expression(if_statement.condition)
-
-            if isinstance(if_statement.else_body, node.NoneNode):
-                # there is no else body
-                with self.cfb.if_then(ir_condition):
+        if isinstance(if_statement.else_body, node.NoneNode):
+            # there is no else body
+            with self.cfb.if_then(ir_condition):
+                statement = self.emit_compound_statement(if_statement.body)
+                self.cfb.position_at_end(statement)
+        else:
+            # there is an else body
+            with self.cfb.if_else(ir_condition) as (then, otherwise):
+                with then:
                     statement = self.emit_compound_statement(if_statement.body)
                     self.cfb.position_at_end(statement)
-            else:
-                # there is an else body
-                with self.cfb.if_else(ir_condition) as (then, otherwise):
-                    with then:
-                        statement = self.emit_compound_statement(if_statement.body)
-                        self.cfb.position_at_end(statement)
-                    with otherwise:
-                        statement = self.emit_compound_statement(if_statement.else_body)
-                        self.cfb.position_at_end(statement)
-
-        return if_block
+                with otherwise:
+                    statement = self.emit_compound_statement(if_statement.else_body)
+                    self.cfb.position_at_end(statement)k
 
     def emit_compound_statement(self, compound_statement: node.CompoundStatement) -> ir.Block:
         # create compound block
@@ -190,7 +182,27 @@ class Emitter:
 
         return compound_block
 
-    def emit_expression(self, expression: node.ExpressionTypes) -> ir.Value:
+    def emit_statement(self, statement: node.StatementTypes):
+        if isinstance(statement, node.CompoundStatement):
+            self.emit_compound_statement(statement)
+        elif isinstance(statement, node.Expression):
+            self.emit_expression(statement)
+        elif isinstance(statement, node.If):
+            self.emit_if_statement(statement)
+        elif isinstance(statement, node.While):
+            self.emit_while_statement(statement)
+        elif isinstance(statement, node.For):
+            self.emit_for_statement(statement)
+        elif isinstance(statement, node.Return):
+            self.emit_return_statement(statement)
+        elif isinstance(statement, node.Break):
+            self.emit_break_statement(statement)
+        elif isinstance(statement, node.Continue):
+            self.emit_continue_statement(statement)
+        else:
+            raise SyntaxError("SimplerC : Some Thing Went Wrong: ...")
+
+    def emit_expression(self, expression: node.ExpressionTypes) -> ir.Value | None:
         # assignment expression will be inlined to the block
 
         if isinstance(expression, node.CBinaryOp):
@@ -313,10 +325,10 @@ class Emitter:
                     case node.CPrimaryType.DOUBLE:  # double to double
                         return what_to_cast_ir
 
-    def emit_store(self, store_to: node.Identifier, what_to_store: ir.Value):
+    def emit_store(self, store_to: node.Identifier, what_to_store: ir.Value) -> None:
         self.cfb.store(what_to_store, self.look_for_ed_identifier_in_stack(store_to).ir_declaration)
 
-    def emit_binary_operator(self, binary_expression: node.CBinaryOp) -> ir.Value:
+    def emit_binary_operator(self, binary_expression: node.CBinaryOp) -> ir.Value | None:
         # assignment operator
         assignment_operators: list[node.CBinaryOpKind] = [
             node.CBinaryOpKind.Assignment,
