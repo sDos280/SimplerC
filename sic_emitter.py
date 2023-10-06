@@ -22,6 +22,19 @@ class SicScope:
         self.current_if: node.If | None = None
 
 
+class StackPackage:
+    # this class is used to store the information of the identifiers in the stack
+    def __init__(self, identifier_str: str, declaration: node.Declaration | node.FunctionDefinition, ir_declaration: ir.Function | ir.Value):
+        self.identifier_str = identifier_str
+        self.declaration = declaration
+        self.ir_declaration = ir_declaration
+
+    def to_dict(self):
+        return {
+            f'{self.identifier_str}': (self.declaration, self.ir_declaration)
+        }
+
+
 class Emitter:
     def __init__(self, lexer, translation_unit):
         self.lexer = lexer
@@ -53,6 +66,63 @@ class Emitter:
                 return ir.FloatType()
             case node.TypeName.DOUBLE:
                 return ir.DoubleType()
+
+    def get_expression_type(self, expression: node.Node) -> node.CPrimaryType:
+        if isinstance(expression, node.CBinaryOp):
+            return self.get_binary_expression_type(expression)
+        elif isinstance(expression, node.CharLiteral):
+            return node.CPrimaryType.CHAR
+        elif isinstance(expression, node.ConstantLiteral):
+            if expression.token.string.find('.') == 1:
+                return node.CPrimaryType.FLOAT
+            else:
+                return node.CPrimaryType.INT
+        elif isinstance(expression, node.Identifier):
+            identifier_in_stack: node.Declaration = self.look_for_ed_identifier_in_stack(expression.token.string)[0]
+
+            if identifier_in_stack is None:
+                raise SyntaxError("SimplerC : Some Thing Went Wrong: ...")
+
+            return identifier_in_stack.type_name
+        elif isinstance(expression, node.CUnaryOp):
+            return self.get_unary_expression_type(expression)
+        elif isinstance(expression, node.CCast):
+            return expression.type_name
+        elif isinstance(expression, node.CTernaryOp):
+            return self.get_ternary_expression_type(expression)
+        elif isinstance(expression, node.FunctionCall):
+            return self.get_function_call_type(expression)
+        else:
+            raise SyntaxError("SimplerC : Type Error : the node in not an expression")
+
+    def get_binary_expression_type(self, expression: node.CBinaryOp) -> node.CPrimaryType:
+        left_type: node.CPrimaryType = self.get_expression_type(expression.left)
+        right_type: node.CPrimaryType = self.get_expression_type(expression.right)
+
+        if left_type != right_type:
+            raise SyntaxError("SimplerC : Some Thing Went Wrong: ...")
+
+        return left_type
+
+    def get_unary_expression_type(self, expression: node.CUnaryOp) -> node.CPrimaryType:
+        if expression.kind == node.CUnaryOpKind.Sizeof:
+            return node.CPrimaryType.INT
+        else:
+            return self.get_expression_type(expression.expression)
+
+    def get_ternary_expression_type(self, expression: node.CTernaryOp) -> node.CPrimaryType:
+        if self.get_expression_type(expression.true_value) != self.get_expression_type(expression.false_value):
+            raise SyntaxError("SimplerC : Some Thing Went Wrong: ...")
+
+        return self.get_expression_type(expression.true_value)
+
+    def get_function_call_type(self, expression: node.FunctionCall) -> node.CPrimaryType:
+        identifier_in_stack: node.FunctionDefinition = self.look_for_ed_identifier_in_stack(expression.identifier.token.string)[0]
+
+        if identifier_in_stack is None:
+            raise SyntaxError("SimplerC : Some Thing Went Wrong: ...")
+
+        return identifier_in_stack.type_name
 
     # -------------------------------------------------------
     # emit functions
@@ -115,11 +185,11 @@ class Emitter:
             return self.emit_binary_operator(expression)
         elif isinstance(expression, node.Expression):
             for expression in expression.expressions:
-                return self.visit_expression(expression)
+                return self.emit_expression(expression)
         elif isinstance(expression, node.CUnaryOp):
             assert False, "not implemented"
         elif isinstance(expression, node.CCast):
-            assert False, "not implemented"
+            return self.emit_cast_expression(expression)
         elif isinstance(expression, node.CTernaryOp):
             assert False, "not implemented"
         elif isinstance(expression, node.FunctionCall):
@@ -136,6 +206,33 @@ class Emitter:
             return self.identifiers_table[expression.token.string]
         else:
             raise SyntaxError("SimplerC : Type Error : the node in not an expression")
+
+    """def emit_cast_expression(self, expression: node.CCast):
+        "
+        # -----------------------------------------
+        CHAR = enum.auto()  # 'char' or 'signed char'
+        # UCHAR = enum.auto()  # 'unsigned char'
+        SHORT = enum.auto()  # 'short' or 'short int' or 'signed short' or 'signed short int'
+        # USHORT = enum.auto()  # 'unsigned short'
+        INT = enum.auto()  # 'int' or 'signed' or 'signed int'
+        # UINT = enum.auto()  # 'unsigned' or 'unsigned int'
+        LONG = enum.auto()  # 'long' or 'long int' or 'signed long' or 'signed long int'
+        # ULONG = enum.auto()  # 'unsigned long'
+        # -----------------------------------------
+        FLOAT = enum.auto()  # 'float'
+        DOUBLE = enum.auto()  # 'double'
+        # -----------------------------------------
+        "
+
+        # get the type of the expression
+        expression_cast_type = self.sic_type_to_ir_type(expression.type_name)
+
+        # get the value of the expression
+        expression_value = self.emit_expression(expression.expression)
+        expression_value_type = self.cfb."""
+
+    def emit_store(self, store_to: node.Identifier, what_to_store: ir.Value):
+        self.cfb.store(what_to_store, self.identifiers_table[store_to.token.string])
 
     # -------------------------------------------------------
 
