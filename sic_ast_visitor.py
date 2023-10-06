@@ -107,7 +107,7 @@ class ASTVisitor:
 
     def get_unary_expression_type(self, expression: node.CUnaryOp) -> node.CPrimaryType:
         if expression.kind == node.CUnaryOpKind.Sizeof:
-            return node.CPrimaryType.UINT
+            return node.CPrimaryType.INT
         else:
             return self.get_expression_type(expression.expression)
 
