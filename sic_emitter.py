@@ -175,6 +175,21 @@ class Emitter:
 
         return if_block
 
+    def emit_compound_statement(self, compound_statement: node.CompoundStatement) -> ir.Block:
+        # create compound block
+        compound_block: ir.Block = self.cfb.append_basic_block(name='compound')
+
+        with self.cfb.goto_block(compound_block):
+            for declaration in compound_statement.declarations:
+                self.emit_declaration(declaration)
+
+            for statement in compound_statement.statements:
+                self.emit_statement(statement)
+
+        self.pop_stack_by(len(compound_statement.declarations))
+
+        return compound_block
+
     def emit_expression(self, expression: node.ExpressionTypes) -> ir.Value:
         # assignment expression will be inlined to the block
 
@@ -491,7 +506,6 @@ class Emitter:
                         return self.cfb.or_(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right))
                     else:  # float or double
                         raise SyntaxError("SimplerC : Syntax Error : bitwise or operator cannot be applied to float or double")
-
 
         else:  # non-assignment binary operators or conditional operators
             match binary_expression.kind:
