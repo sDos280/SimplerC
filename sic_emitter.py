@@ -165,7 +165,7 @@ class Emitter:
                     self.cfb.position_at_end(statement)
                 with otherwise:
                     statement = self.emit_compound_statement(if_statement.else_body)
-                    self.cfb.position_at_end(statement)k
+                    self.cfb.position_at_end(statement)
 
     def emit_compound_statement(self, compound_statement: node.CompoundStatement) -> ir.Block:
         # create compound block
@@ -182,7 +182,8 @@ class Emitter:
 
         return compound_block
 
-    def emit_statement(self, statement: node.StatementTypes):
+    def emit_statement(self, statement: node.StatementTypes) -> None:
+        # inline statement
         if isinstance(statement, node.CompoundStatement):
             self.emit_compound_statement(statement)
         elif isinstance(statement, node.Expression):
