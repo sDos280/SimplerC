@@ -3,8 +3,35 @@
 the emitter job is to emit the ast code
 
 """
+import enum
 import sic_node as node
 import llvmlite.ir as ir
+
+
+class CPrimaryTypeIntFlag(enum.IntFlag):
+    CHAR = 1 << 0
+    SHORT = 1 << 2
+    INT = 1 << 4
+    LONG = 1 << 6
+    FLOAT = 1 << 8
+    DOUBLE = 1 << 10
+
+
+def primary_to_primary_IntFlag(primary_type: node.CPrimaryType) -> CPrimaryTypeIntFlag:
+    if primary_type == node.CPrimaryType.CHAR:
+        return CPrimaryTypeIntFlag.CHAR
+    elif primary_type == node.CPrimaryType.SHORT:
+        return CPrimaryTypeIntFlag.SHORT
+    elif primary_type == node.CPrimaryType.INT:
+        return CPrimaryTypeIntFlag.INT
+    elif primary_type == node.CPrimaryType.LONG:
+        return CPrimaryTypeIntFlag.LONG
+    elif primary_type == node.CPrimaryType.FLOAT:
+        return CPrimaryTypeIntFlag.FLOAT
+    elif primary_type == node.CPrimaryType.DOUBLE:
+        return CPrimaryTypeIntFlag.DOUBLE
+    else:
+        raise SyntaxError("SimplerC : Type Error : the node in not an expression")
 
 
 class StackPackage:
@@ -15,6 +42,7 @@ class StackPackage:
 
     def to_tuple(self):
         return self.declaration, self.ir_declaration
+
 
 class Emitter:
     def __init__(self, lexer, translation_unit):
@@ -202,8 +230,8 @@ class Emitter:
         else:
             raise SyntaxError("SimplerC : Type Error : the node in not an expression")
 
-    """def emit_cast_expression(self, expression: node.CCast):
-        "
+    def emit_cast_expression(self, expression: node.CCast):
+        """
         # -----------------------------------------
         CHAR = enum.auto()  # 'char' or 'signed char'
         # UCHAR = enum.auto()  # 'unsigned char'
@@ -217,14 +245,17 @@ class Emitter:
         FLOAT = enum.auto()  # 'float'
         DOUBLE = enum.auto()  # 'double'
         # -----------------------------------------
-        "
-
-        # get the type of the expression
-        expression_cast_type = self.sic_type_to_ir_type(expression.type_name)
+        """
 
         # get the value of the expression
         expression_value = self.emit_expression(expression.expression)
-        expression_value_type = self.cfb."""
+        expression_value_type: node.CPrimaryType = self.get_expression_type(expression.expression)
+
+        # cast the value to the type
+        if expression_value_type == expression.type_name:
+            return
+
+        match expression.type_name + expression_value_type:
 
     def emit_store(self, store_to: node.Identifier, what_to_store: ir.Value):
         self.cfb.store(what_to_store, self.look_for_ed_identifier_in_stack(store_to).ir_declaration)
