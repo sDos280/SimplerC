@@ -317,6 +317,17 @@ class Emitter:
             node.CBinaryOpKind.RightShiftAssignment,
         ]
 
+        conditional_operators: list[node.CBinaryOpKind] = [
+            node.CBinaryOpKind.EqualTo,
+            node.CBinaryOpKind.NotEqualTo,
+            node.CBinaryOpKind.GreaterThan,
+            node.CBinaryOpKind.GreaterThanOrEqualTo,
+            node.CBinaryOpKind.LessThan,
+            node.CBinaryOpKind.LessThanOrEqualTo,
+            node.CBinaryOpKind.LogicalAND,
+            node.CBinaryOpKind.LogicalOR,
+        ]
+
         # check if the binary expression is an assignment operator
         if binary_expression.kind in assignment_operators:
             # make sure the left side is an identifier
@@ -451,7 +462,7 @@ class Emitter:
                         return self.cfb.urem(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right))
                     else:  # float or double
                         return self.cfb.frem(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right))
-                case node.CBinaryOpKind.BitwiseOR | node.CBinaryOpKind.LogicalOR:
+                case node.CBinaryOpKind.BitwiseOR:
                     if self.look_for_ed_identifier_in_stack(binary_expression.left).declaration.type_name in [node.CPrimaryType.CHAR,
                                                                                                               node.CPrimaryType.SHORT,
                                                                                                               node.CPrimaryType.INT,
@@ -459,7 +470,7 @@ class Emitter:
                         return self.cfb.or_(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right))
                     else:  # float or double
                         raise SyntaxError("SimplerC : Syntax Error : bitwise or operator cannot be applied to float or double")
-                case node.CBinaryOpKind.BitwiseAND | node.CBinaryOpKind.LogicalAND:
+                case node.CBinaryOpKind.BitwiseAND:
                     if self.look_for_ed_identifier_in_stack(binary_expression.left).declaration.type_name in [node.CPrimaryType.CHAR,
                                                                                                               node.CPrimaryType.SHORT,
                                                                                                               node.CPrimaryType.INT,
