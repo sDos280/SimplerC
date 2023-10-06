@@ -8,32 +8,6 @@ import sic_node as node
 import llvmlite.ir as ir
 
 
-class CPrimaryTypeIntFlag(enum.IntFlag):
-    CHAR = 1 << 0
-    SHORT = 1 << 2
-    INT = 1 << 4
-    LONG = 1 << 6
-    FLOAT = 1 << 8
-    DOUBLE = 1 << 10
-
-
-def primary_to_primary_IntFlag(primary_type: node.CPrimaryType) -> CPrimaryTypeIntFlag:
-    if primary_type == node.CPrimaryType.CHAR:
-        return CPrimaryTypeIntFlag.CHAR
-    elif primary_type == node.CPrimaryType.SHORT:
-        return CPrimaryTypeIntFlag.SHORT
-    elif primary_type == node.CPrimaryType.INT:
-        return CPrimaryTypeIntFlag.INT
-    elif primary_type == node.CPrimaryType.LONG:
-        return CPrimaryTypeIntFlag.LONG
-    elif primary_type == node.CPrimaryType.FLOAT:
-        return CPrimaryTypeIntFlag.FLOAT
-    elif primary_type == node.CPrimaryType.DOUBLE:
-        return CPrimaryTypeIntFlag.DOUBLE
-    else:
-        raise SyntaxError("SimplerC : Type Error : the node in not an expression")
-
-
 class StackPackage:
     # this class is used to store the information of the identifiers in the stack
     def __init__(self, declaration: node.Declaration | node.FunctionDefinition, ir_declaration: ir.Function | ir.Value):
@@ -251,11 +225,94 @@ class Emitter:
         expression_value = self.emit_expression(expression.expression)
         expression_value_type: node.CPrimaryType = self.get_expression_type(expression.expression)
 
-        # cast the value to the type
-        if expression_value_type == expression.type_name:
-            return
+        self.emit_cast_instruction(expression.type_name, expression_value, expression_value_type)
 
-        match expression.type_name + expression_value_type:
+    def emit_cast_instruction(self, cast_to: node.CPrimaryType, what_to_cast_ir: ir.Value, what_to_cast_type: node.CPrimaryType) -> ir.Value:
+        match cast_to:
+            case node.CPrimaryType.CHAR:  # the default char type is unsigned long
+                match what_to_cast_type:
+                    case node.CPrimaryType.CHAR:  # char to char
+                        return what_to_cast_ir
+                    case node.CPrimaryType.SHORT:  # short to char
+                        return self.cfb.trunc(what_to_cast_ir, ir.IntType(8))
+                    case node.CPrimaryType.INT:  # int to char
+                        return self.cfb.trunc(what_to_cast_ir, ir.IntType(8))
+                    case node.CPrimaryType.LONG:  # long to char
+                        return self.cfb.trunc(what_to_cast_ir, ir.IntType(8))
+                    case node.CPrimaryType.FLOAT:  # float to char
+                        return self.cfb.fptoui(what_to_cast_ir, ir.IntType(8))
+                    case node.CPrimaryType.DOUBLE:  # double to char
+                        raise SyntaxError("SimplerC : Type Error : cannot cast double to char")
+            case node.CPrimaryType.SHORT:
+                match what_to_cast_type:
+                    case node.CPrimaryType.CHAR:  # char to short
+                        return self.cfb.zext(what_to_cast_ir, ir.IntType(16))
+                    case node.CPrimaryType.SHORT:  # short to short
+                        return what_to_cast_ir
+                    case node.CPrimaryType.INT:  # int to short
+                        return self.cfb.trunc(what_to_cast_ir, ir.IntType(16))
+                    case node.CPrimaryType.LONG:  # long to short
+                        return self.cfb.trunc(what_to_cast_ir, ir.IntType(16))
+                    case node.CPrimaryType.FLOAT:  # float to short
+                        return self.cfb.fptosi(what_to_cast_ir, ir.IntType(16))
+                    case node.CPrimaryType.DOUBLE:  # double to short
+                        raise SyntaxError("SimplerC : Type Error : cannot cast double to short")
+            case node.CPrimaryType.INT:
+                match what_to_cast_type:
+                    case node.CPrimaryType.CHAR:  # char to int
+                        return self.cfb.zext(what_to_cast_ir, ir.IntType(32))
+                    case node.CPrimaryType.SHORT:  # short to int
+                        return self.cfb.zext(what_to_cast_ir, ir.IntType(32))
+                    case node.CPrimaryType.INT:  # int to int
+                        return what_to_cast_ir
+                    case node.CPrimaryType.LONG:  # long to int
+                        return self.cfb.trunc(what_to_cast_ir, ir.IntType(32))
+                    case node.CPrimaryType.FLOAT:  # float to int
+                        return self.cfb.fptosi(what_to_cast_ir, ir.IntType(32))
+                    case node.CPrimaryType.DOUBLE:  # double to int
+                        raise SyntaxError("SimplerC : Type Error : cannot cast double to int")
+            case node.CPrimaryType.LONG:  # the default long type is signed long
+                match what_to_cast_type:
+                    case node.CPrimaryType.CHAR:  # char to long
+                        return self.cfb.zext(what_to_cast_ir, ir.IntType(64))
+                    case node.CPrimaryType.SHORT:  # short to long
+                        return self.cfb.zext(what_to_cast_ir, ir.IntType(64))
+                    case node.CPrimaryType.INT:  # int to long
+                        return self.cfb.zext(what_to_cast_ir, ir.IntType(64))
+                    case node.CPrimaryType.LONG:  # long to long
+                        return what_to_cast_ir
+                    case node.CPrimaryType.FLOAT:  # float to long
+                        return self.cfb.fptosi(what_to_cast_ir, ir.IntType(64))
+                    case node.CPrimaryType.DOUBLE:  # double to long
+                        raise SyntaxError("SimplerC : Type Error : cannot cast double to long")
+            case node.CPrimaryType.FLOAT:
+                match what_to_cast_type:
+                    case node.CPrimaryType.CHAR:  # char to float
+                        return self.cfb.uitofp(what_to_cast_ir, ir.FloatType())
+                    case node.CPrimaryType.SHORT:  # short to float
+                        return self.cfb.sitofp(what_to_cast_ir, ir.FloatType())
+                    case node.CPrimaryType.INT:  # int to float
+                        return self.cfb.sitofp(what_to_cast_ir, ir.FloatType())
+                    case node.CPrimaryType.LONG:  # long to float
+                        return self.cfb.sitofp(what_to_cast_ir, ir.FloatType())
+                    case node.CPrimaryType.FLOAT:  # float to float
+                        return what_to_cast_ir
+                    case node.CPrimaryType.DOUBLE:  # double to float
+                        raise self.cfb.fpext(what_to_cast_ir, ir.FloatType())
+            case node.CPrimaryType.DOUBLE:
+                match what_to_cast_type:
+                    case node.CPrimaryType.CHAR:  # char to double
+                        return self.cfb.uitofp(what_to_cast_ir, ir.DoubleType())
+                    case node.CPrimaryType.SHORT:  # short to double
+                        return self.cfb.sitofp(what_to_cast_ir, ir.DoubleType())
+                    case node.CPrimaryType.INT:  # int to double
+                        return self.cfb.sitofp(what_to_cast_ir, ir.DoubleType())
+                    case node.CPrimaryType.LONG:  # long to double
+                        return self.cfb.sitofp(what_to_cast_ir, ir.DoubleType())
+                    case node.CPrimaryType.FLOAT:  # float to double
+                        return self.cfb.fpext(what_to_cast_ir, ir.DoubleType())
+                    case node.CPrimaryType.DOUBLE:  # double to double
+                        return what_to_cast_ir
 
     def emit_store(self, store_to: node.Identifier, what_to_store: ir.Value):
         self.cfb.store(what_to_store, self.look_for_ed_identifier_in_stack(store_to).ir_declaration)
