@@ -149,6 +149,7 @@ class Emitter:
             ir_variable = self.cfb.alloca(ir_type, name=declaration.identifier.token.string)
 
             # add to identifiers table
+            # the caller of emit_declaration is responsible for popping the identifier from the stack
             self.identifiers_table[declaration.identifier.token.string] = ir_variable
 
             # emit initializer
