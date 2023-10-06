@@ -204,32 +204,16 @@ class Emitter:
         else:
             raise SyntaxError("SimplerC : Type Error : the node in not an expression")
 
-    def emit_cast_expression(self, expression: node.CCast):
-        """
-        # -----------------------------------------
-        CHAR = enum.auto()  # 'char' or 'signed char'
-        # UCHAR = enum.auto()  # 'unsigned char'
-        SHORT = enum.auto()  # 'short' or 'short int' or 'signed short' or 'signed short int'
-        # USHORT = enum.auto()  # 'unsigned short'
-        INT = enum.auto()  # 'int' or 'signed' or 'signed int'
-        # UINT = enum.auto()  # 'unsigned' or 'unsigned int'
-        LONG = enum.auto()  # 'long' or 'long int' or 'signed long' or 'signed long int'
-        # ULONG = enum.auto()  # 'unsigned long'
-        # -----------------------------------------
-        FLOAT = enum.auto()  # 'float'
-        DOUBLE = enum.auto()  # 'double'
-        # -----------------------------------------
-        """
-
+    def emit_cast_expression(self, expression: node.CCast) -> ir.Value:
         # get the value of the expression
         expression_value = self.emit_expression(expression.expression)
         expression_value_type: node.CPrimaryType = self.get_expression_type(expression.expression)
 
-        self.emit_cast_instruction(expression.type_name, expression_value, expression_value_type)
+        return self.emit_cast_instruction(expression.type_name, expression_value, expression_value_type)
 
     def emit_cast_instruction(self, cast_to: node.CPrimaryType, what_to_cast_ir: ir.Value, what_to_cast_type: node.CPrimaryType) -> ir.Value:
         match cast_to:
-            case node.CPrimaryType.CHAR:  # the default char type is unsigned long
+            case node.CPrimaryType.CHAR:  # the default char type is unsigned char
                 match what_to_cast_type:
                     case node.CPrimaryType.CHAR:  # char to char
                         return what_to_cast_ir
@@ -316,6 +300,113 @@ class Emitter:
 
     def emit_store(self, store_to: node.Identifier, what_to_store: ir.Value):
         self.cfb.store(what_to_store, self.look_for_ed_identifier_in_stack(store_to).ir_declaration)
+
+    def emit_binary_operator(self, binary_expression: node.CBinaryOp) -> ir.Value:
+        # assignment operator
+        assignment_operators: list[node.CBinaryOpKind] = [
+            node.CBinaryOpKind.Assignment,
+            node.CBinaryOpKind.AdditionAssignment,
+            node.CBinaryOpKind.SubtractionAssignment,
+            node.CBinaryOpKind.MultiplicationAssignment,
+            node.CBinaryOpKind.DivisionAssignment,
+            node.CBinaryOpKind.ModulusAssignment,
+            node.CBinaryOpKind.BitwiseAndAssignment,
+            node.CBinaryOpKind.BitwiseOrAssignment,
+            node.CBinaryOpKind.BitwiseXorAssignment,
+            node.CBinaryOpKind.LeftShiftAssignment,
+            node.CBinaryOpKind.RightShiftAssignment,
+        ]
+
+        # check if the binary expression is an assignment operator
+        if binary_expression.kind in assignment_operators:
+            # make sure the left side is an identifier
+            if not isinstance(binary_expression.left, node.Identifier):
+                raise SyntaxError("SimplerC : Syntax Error : left side of assignment operator must be an identifier")
+
+            match binary_expression.kind:
+                case node.CBinaryOpKind.Assignment:
+                    self.emit_store(binary_expression.left, self.emit_expression(binary_expression.right))
+                case node.CBinaryOpKind.AdditionAssignment:
+                    if self.look_for_ed_identifier_in_stack(binary_expression.left).declaration.type_name in [node.CPrimaryType.CHAR,
+                                                                                                              node.CPrimaryType.SHORT,
+                                                                                                              node.CPrimaryType.INT,
+                                                                                                              node.CPrimaryType.LONG]:
+                        self.emit_store(binary_expression.left, self.cfb.add(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right)))
+                    else:  # float or double
+                        self.emit_store(binary_expression.left, self.cfb.fadd(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right)))
+                case node.CBinaryOpKind.SubtractionAssignment:
+                    if self.look_for_ed_identifier_in_stack(binary_expression.left).declaration.type_name in [node.CPrimaryType.CHAR,
+                                                                                                              node.CPrimaryType.SHORT,
+                                                                                                              node.CPrimaryType.INT,
+                                                                                                              node.CPrimaryType.LONG]:
+                        self.emit_store(binary_expression.left, self.cfb.sub(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right)))
+                    else:  # float or double
+                        self.emit_store(binary_expression.left, self.cfb.fsub(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right)))
+                case node.CBinaryOpKind.MultiplicationAssignment:
+                    if self.look_for_ed_identifier_in_stack(binary_expression.left).declaration.type_name in [node.CPrimaryType.CHAR,
+                                                                                                              node.CPrimaryType.SHORT,
+                                                                                                              node.CPrimaryType.INT,
+                                                                                                              node.CPrimaryType.LONG]:
+                        self.emit_store(binary_expression.left, self.cfb.mul(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right)))
+                    else:  # float or double
+                        self.emit_store(binary_expression.left, self.cfb.fmul(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right)))
+                case node.CBinaryOpKind.DivisionAssignment:
+                    if self.look_for_ed_identifier_in_stack(binary_expression.left).declaration.type_name in [node.CPrimaryType.CHAR,
+                                                                                                              node.CPrimaryType.SHORT,
+                                                                                                              node.CPrimaryType.INT,
+                                                                                                              node.CPrimaryType.LONG]:
+                        self.emit_store(binary_expression.left, self.cfb.sdiv(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right)))
+                    else:  # float or double
+                        self.emit_store(binary_expression.left, self.cfb.fdiv(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right)))
+                case node.CBinaryOpKind.ModulusAssignment:
+                    if self.look_for_ed_identifier_in_stack(binary_expression.left).declaration.type_name in [node.CPrimaryType.SHORT,
+                                                                                                              node.CPrimaryType.INT,
+                                                                                                              node.CPrimaryType.LONG]:
+                        self.emit_store(binary_expression.left, self.cfb.srem(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right)))
+                    elif self.look_for_ed_identifier_in_stack(binary_expression.left).declaration.type_name == node.CPrimaryType.CHAR:
+                        self.emit_store(binary_expression.left, self.cfb.urem(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right)))
+                    else:  # float or double
+                        self.emit_store(binary_expression.left, self.cfb.frem(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right)))
+                case node.CBinaryOpKind.BitwiseAndAssignment:
+                    if self.look_for_ed_identifier_in_stack(binary_expression.left).declaration.type_name in [node.CPrimaryType.CHAR,
+                                                                                                              node.CPrimaryType.SHORT,
+                                                                                                              node.CPrimaryType.INT,
+                                                                                                              node.CPrimaryType.LONG]:
+                        self.emit_store(binary_expression.left, self.cfb.and_(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right)))
+                    else:  # float or double
+                        raise SyntaxError("SimplerC : Syntax Error : bitwise and operator cannot be applied to float or double")
+                case node.CBinaryOpKind.BitwiseOrAssignment:
+                    if self.look_for_ed_identifier_in_stack(binary_expression.left).declaration.type_name in [node.CPrimaryType.CHAR,
+                                                                                                              node.CPrimaryType.SHORT,
+                                                                                                              node.CPrimaryType.INT,
+                                                                                                              node.CPrimaryType.LONG]:
+                        self.emit_store(binary_expression.left, self.cfb.or_(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right)))
+                    else:  # float or double
+                        raise SyntaxError("SimplerC : Syntax Error : bitwise or operator cannot be applied to float or double")
+                case node.CBinaryOpKind.BitwiseXorAssignment:
+                    if self.look_for_ed_identifier_in_stack(binary_expression.left).declaration.type_name in [node.CPrimaryType.CHAR,
+                                                                                                              node.CPrimaryType.SHORT,
+                                                                                                              node.CPrimaryType.INT,
+                                                                                                              node.CPrimaryType.LONG]:
+                        self.emit_store(binary_expression.left, self.cfb.xor(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right)))
+                    else:  # float or double
+                        raise SyntaxError("SimplerC : Syntax Error : bitwise xor operator cannot be applied to float or double")
+                case node.CBinaryOpKind.LeftShiftAssignment:
+                    if self.look_for_ed_identifier_in_stack(binary_expression.left).declaration.type_name in [node.CPrimaryType.CHAR,
+                                                                                                              node.CPrimaryType.SHORT,
+                                                                                                              node.CPrimaryType.INT,
+                                                                                                              node.CPrimaryType.LONG]:
+                        self.emit_store(binary_expression.left, self.cfb.shl(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right)))
+                    else:  # float or double
+                        raise SyntaxError("SimplerC : Syntax Error : left shift operator cannot be applied to float or double")
+                case node.CBinaryOpKind.RightShiftAssignment:
+                    if self.look_for_ed_identifier_in_stack(binary_expression.left).declaration.type_name in [node.CPrimaryType.CHAR,
+                                                                                                              node.CPrimaryType.SHORT,
+                                                                                                              node.CPrimaryType.INT,
+                                                                                                              node.CPrimaryType.LONG]:
+                        self.emit_store(binary_expression.left, self.cfb.ashr(self.emit_expression(binary_expression.left), self.emit_expression(binary_expression.right)))
+                    else:  # float or double
+                        raise SyntaxError("SimplerC : Syntax Error : right shift operator cannot be applied to float or double")
 
     # -------------------------------------------------------
 
