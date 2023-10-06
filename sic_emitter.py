@@ -167,6 +167,17 @@ class Emitter:
                     statement = self.emit_compound_statement(if_statement.else_body)
                     self.cfb.position_at_end(statement)
 
+    def emit_while_statement(self, while_statement: node.While) -> None:
+        # inline while statement
+        while_statement_block: ir.Block = self.cfb.append_basic_block(name='while')
+
+        with self.cfb.goto_block(while_statement_block):
+            self.emit_compound_statement(while_statement.body)
+
+        ir_condition = self.emit_expression(while_statement.condition)
+
+        self.cfb.cbranch(ir_condition, while_statement_block, self.cfb.block)
+
     def emit_compound_statement(self, compound_statement: node.CompoundStatement) -> ir.Block:
         # create compound block
         compound_block: ir.Block = self.cfb.append_basic_block(name='compound')
