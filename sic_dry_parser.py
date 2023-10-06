@@ -752,7 +752,7 @@ class DryParser:
         else:
             self.fatal_token("Expected iteration statement")
 
-    def peek_jump_statement(self) -> node.Node:
+    def peek_jump_statement(self) -> node.JumpStatementTypes:
         if self.is_token_kind(tk.TokenKind.CONTINUE):
             continue_node: node.Continue = node.Continue(self.current_token)
             self.peek_token()  # peek continue token
