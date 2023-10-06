@@ -135,7 +135,7 @@ class DryParser:
             self.fatal_token("Expected assignment operator token")
 
     # dry parser grammar peek methods
-    def peek_primary_expression(self) -> node.PrimaryExpressionTypes | list[node.PrimaryExpressionTypes]:
+    def peek_primary_expression(self) -> node.Node | list[node.Node]:
         if self.is_token_kind(tk.TokenKind.IDENTIFIER):
             return self.peek_identifier()
         elif self.is_token_kind([tk.TokenKind.INTEGER_LITERAL, tk.TokenKind.FLOAT_LITERAL]):
@@ -752,7 +752,7 @@ class DryParser:
         else:
             self.fatal_token("Expected iteration statement")
 
-    def peek_jump_statement(self) -> node.JumpStatementTypes:
+    def peek_jump_statement(self) -> node.Node:
         if self.is_token_kind(tk.TokenKind.CONTINUE):
             continue_node: node.Continue = node.Continue(self.current_token)
             self.peek_token()  # peek continue token
