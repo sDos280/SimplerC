@@ -171,10 +171,12 @@ class Emitter:
         # inline while statement
         while_statement_block: ir.Block = self.cfb.append_basic_block(name='while')
 
+        ir_condition = self.emit_expression(while_statement.condition)
+
         with self.cfb.goto_block(while_statement_block):
             self.emit_compound_statement(while_statement.body)
 
-        ir_condition = self.emit_expression(while_statement.condition)
+            self.cfb.cbranch(ir_condition, while_statement_block, self.cfb.block)
 
         self.cfb.cbranch(ir_condition, while_statement_block, self.cfb.block)
 
