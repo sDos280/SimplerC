@@ -28,7 +28,7 @@ class Emitter:
 
         self.cfb: ir.IRBuilder | None = None  # current function builder
 
-        self.identifiers_table: dict[str, ...] = {}
+        self.identifiers_table: list[StackPackage] = []
 
     # -------------------------------------------------------
     # helper functions
@@ -49,6 +49,10 @@ class Emitter:
                 return ir.FloatType()
             case node.TypeName.DOUBLE:
                 return ir.DoubleType()
+
+    def pop_stack_by(self, amount: int) -> None:
+        for _ in range(amount):
+            self.identifiers_table.pop()
 
     def get_expression_type(self, expression: node.Node) -> node.CPrimaryType:
         if isinstance(expression, node.CBinaryOp):
@@ -107,8 +111,11 @@ class Emitter:
 
         return identifier_in_stack.type_name
 
-    def look_for_ed_string_in_stack(self, identifier_str: str):
-        return self.identifiers_table[identifier_str]
+    def look_for_ed_identifier_in_stack(self, identifier: node.Identifier) -> StackPackage | None:
+        for stack_package in self.identifiers_table:
+            if stack_package.declaration.identifier.token.string == identifier.token.string:
+                return stack_package
+        return None
 
     # -------------------------------------------------------
     # emit functions
