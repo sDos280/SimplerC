@@ -50,7 +50,8 @@ class Emitter:
 
     # -------------------------------------------------------
     # helper functions
-    def sic_type_to_ir_type(self, sic_type: node.TypeName) -> ir.Type:
+    @staticmethod
+    def sic_type_to_ir_type(sic_type: node.TypeName) -> ir.Type:
         match sic_type:
             case node.TypeName.VOID:
                 return ir.VoidType()
