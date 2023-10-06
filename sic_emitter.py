@@ -127,6 +127,7 @@ class Emitter:
                 self.emit_declaration(external_declaration)
 
     def emit_expression(self, expression: node.ExpressionTypes, create_block: False):
+        pass
 
     def emit_declaration(self, declaration: node.Declaration):
         # create declaration block
@@ -139,7 +140,7 @@ class Emitter:
 
             # add to identifiers table
             # the caller of emit_declaration is responsible for popping the identifier from the stack
-            self.identifiers_table[declaration.identifier.token.string] = ir_variable
+            self.identifiers_table.append(StackPackage(declaration, ir_variable))
 
             # emit initializer
             if not isinstance(declaration.initializer, node.NoneNode):
@@ -197,7 +198,7 @@ class Emitter:
                 return ir.Constant(ir.IntType(32), int(expression.token.string))
         elif isinstance(expression, node.Identifier):
             # return the ir variable of the identifier
-            return self.identifiers_table[expression.token.string]
+            return self.look_for_ed_identifier_in_stack(expression).ir_declaration
         else:
             raise SyntaxError("SimplerC : Type Error : the node in not an expression")
 
@@ -226,7 +227,7 @@ class Emitter:
         expression_value_type = self.cfb."""
 
     def emit_store(self, store_to: node.Identifier, what_to_store: ir.Value):
-        self.cfb.store(what_to_store, self.identifiers_table[store_to.token.string])
+        self.cfb.store(what_to_store, self.look_for_ed_identifier_in_stack(store_to).ir_declaration)
 
     # -------------------------------------------------------
 
