@@ -754,19 +754,21 @@ class DryParser:
 
     def peek_jump_statement(self) -> node.Node:
         if self.is_token_kind(tk.TokenKind.CONTINUE):
+            continue_node: node.Continue = node.Continue(self.current_token)
             self.peek_token()  # peek continue token
 
             self.expect_token_kind(tk.TokenKind.SEMICOLON, "Expected ';' in continue statement")
             self.peek_token()  # peek ; token
 
-            return node.Continue()
+            return continue_node
         elif self.is_token_kind(tk.TokenKind.BREAK):
+            break_node: node.Break = node.Break(self.current_token)
             self.peek_token()  # peek break token
 
             self.expect_token_kind(tk.TokenKind.SEMICOLON, "Expected ';' in break statement")
             self.peek_token()  # peek ; token
 
-            return node.Break()
+            return break_node
         elif self.is_token_kind(tk.TokenKind.RETURN):
             self.peek_token()  # peek return token
 

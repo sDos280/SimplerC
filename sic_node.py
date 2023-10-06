@@ -256,22 +256,24 @@ class Declaration:
 
 
 class Continue:
-    def __init__(self):
-        pass
+    def __init__(self, token: tk.Token):
+        self.token = token
 
     def to_dict(self):
         return {
             "node": "Continue",
+            "token": self.token.string,
         }
 
 
 class Break:
-    def __init__(self):
-        pass
+    def __init__(self, token: tk.Token):
+        self.token = token
 
     def to_dict(self):
         return {
             "node": "Break",
+            "token": self.token.string,
         }
 
 
