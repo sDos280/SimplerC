@@ -7,40 +7,19 @@ import sic_node as node
 import llvmlite.ir as ir
 
 
-class IrScope:
-    def __init__(self):
-        self.current_function: ir.Function | None = None
-        self.current_block: ir.Block | None = None
-
-
-class SicScope:
-    def __init__(self):
-        self.current_function: node.FunctionDefinition | None = None
-        self.current_block: node.CompoundStatement | None = None  # a block in SimpleC is a compound statement
-        self.current_while: node.While | None = None
-        self.current_for: node.For | None = None
-        self.current_if: node.If | None = None
-
-
 class StackPackage:
     # this class is used to store the information of the identifiers in the stack
-    def __init__(self, identifier_str: str, declaration: node.Declaration | node.FunctionDefinition, ir_declaration: ir.Function | ir.Value):
-        self.identifier_str = identifier_str
+    def __init__(self, declaration: node.Declaration | node.FunctionDefinition, ir_declaration: ir.Function | ir.Value):
         self.declaration = declaration
         self.ir_declaration = ir_declaration
 
-    def to_dict(self):
-        return {
-            f'{self.identifier_str}': (self.declaration, self.ir_declaration)
-        }
-
+    def to_tuple(self):
+        return self.declaration, self.ir_declaration
 
 class Emitter:
     def __init__(self, lexer, translation_unit):
         self.lexer = lexer
         self.translation_unit = translation_unit
-        self.ir_scope = IrScope()
-        self.sic_scope = SicScope()
 
         self.module = ir.Module()
 
