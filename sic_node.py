@@ -447,6 +447,14 @@ JumpStatementTypes = typing.Union[
     Return,
 ]
 
+PrimaryExpressionTypes = typing.Union[
+    NoneNode,
+    Identifier,
+    CharLiteral,
+    ConstantLiteral,
+    Expression,
+]
+
 Declarator = typing.Union[typing.Tuple[Identifier, Node],
                           typing.Tuple[NoneNode, NoneNode]  # for function parameter
 ]

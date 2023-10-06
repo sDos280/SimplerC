@@ -135,7 +135,7 @@ class DryParser:
             self.fatal_token("Expected assignment operator token")
 
     # dry parser grammar peek methods
-    def peek_primary_expression(self) -> node.Node | list[node.Node]:
+    def peek_primary_expression(self) -> node.PrimaryExpressionTypes | list[node.PrimaryExpressionTypes]:
         if self.is_token_kind(tk.TokenKind.IDENTIFIER):
             return self.peek_identifier()
         elif self.is_token_kind([tk.TokenKind.INTEGER_LITERAL, tk.TokenKind.FLOAT_LITERAL]):
