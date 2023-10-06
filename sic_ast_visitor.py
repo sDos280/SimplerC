@@ -21,6 +21,9 @@ class ASTVisitor:
         self.translation_unit = translation_unit
         self.external_declaration_stack: list[node.ExternalDeclaration] = []  # a stack of external declaration
 
+        self.current_function_definition: node.FunctionDefinition | None = None
+        self.current_iteration_statement: node.For | node.While | None = None
+
     def fatal_duplicate_identifiers(self, duplicate_of: node.Identifier, duplicate: node.Identifier) -> None:
         duplicate_of_line_index: int = utils.get_line_index_by_char_index(self.lexer.string, duplicate_of.token.start)
         duplicate_of_line_string: str = utils.get_line_by_index(self.lexer.string, duplicate_of_line_index)
