@@ -224,16 +224,24 @@ class ASTVisitor:
             raise SyntaxError("SimplerC : Internal Error : unknown statement type")
 
     def visit_while(self, while_statement: node.While) -> None:
+        self.current_iteration_statement = while_statement
+
         self.visit_expression(while_statement.condition)
 
         self.visit_statement(while_statement.body)
 
+        self.current_iteration_statement = None
+
     def visit_for(self, for_statement: node.For) -> None:
+        self.current_iteration_statement = for_statement
+
         self.visit_expression(for_statement.init)
         self.visit_expression(for_statement.condition)
         self.visit_expression(for_statement.update)
 
         self.visit_statement(for_statement.body)
+
+        self.current_iteration_statement = None
 
     def visit_if(self, if_statement: node.If) -> None:
         self.visit_expression(if_statement.condition)
