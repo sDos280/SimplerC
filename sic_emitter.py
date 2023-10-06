@@ -21,7 +21,10 @@ class Emitter:
         self.lexer = lexer
         self.translation_unit = translation_unit
 
-        self.module = ir.Module()
+        self.module: ir.Module = ir.Module()
+
+        self.current_function_ir: ir.Function | None = None
+        self.current_iteration_ir: ir.Block | None = None
 
         self.cfb: ir.IRBuilder | None = None  # current function builder
 
