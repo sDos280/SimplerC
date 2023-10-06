@@ -53,6 +53,35 @@ class ASTVisitor:
         full_error_string += f"    {line_string}\n"
         raise SyntaxError(full_error_string)
 
+    def fatal_continue_outside_of_iteration_statement(self, continue_statement: node.Continue) -> None:
+        line_index: int = utils.get_line_index_by_char_index(self.lexer.string, continue_statement.token.start)
+        line_string: str = utils.get_line_by_index(self.lexer.string, line_index)
+
+        full_error_string = f"SimplerC : Continue Outside of Iteration Statement : the continue statement was used outside of an iteration statement in :\n"
+        full_error_string += f"    {line_string}\n"
+        raise SyntaxError(full_error_string)
+
+    def fatal_break_outside_of_iteration_statement(self, break_statement: node.Break) -> None:
+        line_index: int = utils.get_line_index_by_char_index(self.lexer.string, break_statement.token.start)
+        line_string: str = utils.get_line_by_index(self.lexer.string, line_index)
+
+        full_error_string = f"SimplerC : Break Outside of Iteration Statement : the break statement was used outside of an iteration statement in :\n"
+        full_error_string += f"    {line_string}\n"
+        raise SyntaxError(full_error_string)
+
+    def fatal_return_type_mismatch(self, return_statement: node.Return) -> None:
+        function_line_index: int = utils.get_line_index_by_char_index(self.lexer.string, self.current_function_definition.identifier.token.start)
+        function_line_string: str = utils.get_line_by_index(self.lexer.string, function_line_index)
+
+        return_line_index: int = utils.get_line_index_by_char_index(self.lexer.string, return_statement.token.start)
+        return_line_string: str = utils.get_line_by_index(self.lexer.string, return_line_index)
+
+        full_error_string = f"SimplerC : Return Type Mismatch : mismatch return type of the function:\n"
+        full_error_string += f"    {function_line_string}\n"
+        full_error_string += f"SimplerC : Return Type Mismatch : the return:\n"
+        full_error_string += f"    {return_line_string}\n"
+        raise SyntaxError(full_error_string)
+
     def look_for_ed_identifier_in_stack(self, identifier: node.Identifier) -> node.ExternalDeclaration | None:
         for external_declaration in self.external_declaration_stack:
             if external_declaration.identifier.token.string == identifier.token.string:
@@ -169,6 +198,7 @@ class ASTVisitor:
         if isinstance(df, node.FunctionDeclaration):
             pass
         else:
+            self.current_function_definition = df
             # add the parameters to the stack
             for parameter in df.parameters_declaration:
                 identifier_in_stack = self.look_for_ed_identifier_in_stack(parameter.identifier)
@@ -184,6 +214,7 @@ class ASTVisitor:
             # pop the stack
             # we only pop the parameters, the function identifier will be popped in the visit_translation_unit
             self.pop_stack_by(len(df.parameters_declaration))
+            self.current_function_definition = None
 
     def visit_compound_statement(self, compound_statement: node.CompoundStatement) -> None:
         # if check_for_return is true, return the function return type
@@ -207,11 +238,22 @@ class ASTVisitor:
     def visit_statement(self, statement: node.StatementTypes) -> None:
         if isinstance(statement, node.CompoundStatement):
             self.visit_compound_statement(statement)
-            # elif isinstance(statement, node.Continue):  # no need to check that
-            # elif isinstance(statement, node.Break):  # no need to check that
+        elif isinstance(statement, node.Continue):
+            if self.current_iteration_statement is None:
+                self.fatal_continue_outside_of_iteration_statement(statement)
+
+            return None
+        elif isinstance(statement, node.Break):
+            if self.current_iteration_statement is None:
+                self.fatal_break_outside_of_iteration_statement(statement)
+
+            return None
         elif isinstance(statement, node.Return):
             if not isinstance(statement.expression, node.NoneNode):
-                self.visit_expression(statement.expression)
+                return_type: node.CPrimaryType = self.visit_expression(statement.expression)
+
+                if return_type != self.current_function_definition.type_name:
+                    self.fatal_return_type_mismatch(statement)
         elif isinstance(statement, node.While):
             self.visit_while(statement)
         elif isinstance(statement, node.For):
