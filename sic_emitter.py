@@ -142,8 +142,9 @@ class Emitter:
         self.current_function_ir = function_ir
         self.cfb = ir.IRBuilder(function_ir_block)
 
-        # add function parameters to identifiers table
+        # add function parameters to identifiers table and set parameters names
         for parameter_ir, parameter_declaration in zip(function_ir.args, function_definition.parameters_declaration):
+            parameter_ir.name = parameter_declaration.identifier.token.string
             self.identifiers_table.append(StackPackage(parameter_declaration, parameter_ir))
 
         # emit function body
