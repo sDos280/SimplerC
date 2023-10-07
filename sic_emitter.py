@@ -168,7 +168,7 @@ class Emitter:
                     self.cfb.position_at_end(statement)
 
     def emit_while_statement(self, while_statement: node.While) -> None:
-        # inline while statement
+        # inline while's block statement
         while_statement_block: ir.Block = self.cfb.append_basic_block(name='while')
 
         self.current_iteration_ir = while_statement_block
@@ -181,6 +181,27 @@ class Emitter:
             self.cfb.cbranch(ir_condition, while_statement_block, self.cfb.block)
 
         self.cfb.cbranch(ir_condition, while_statement_block, self.cfb.block)
+
+        self.current_iteration_ir = None
+
+    def emit_for_statement(self, for_statement: node.For) -> None:
+        # inline for's block statement
+        for_statement_block: ir.Block = self.cfb.append_basic_block(name='for')
+
+        self.current_iteration_ir = for_statement_block
+
+        self.emit_expression(for_statement.init)
+
+        ir_condition = self.emit_expression(for_statement.condition)
+
+        with self.cfb.goto_block(for_statement_block):
+            self.emit_compound_statement(for_statement.body)
+
+            self.emit_expression(for_statement.update)
+
+            self.cfb.cbranch(ir_condition, for_statement_block, self.cfb.block)
+
+        self.cfb.cbranch(ir_condition, for_statement_block, self.cfb.block)
 
         self.current_iteration_ir = None
 
