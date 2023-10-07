@@ -220,6 +220,11 @@ class Emitter:
 
         return compound_block
 
+    def emit_return_statement(self, return_statement: node.Return) -> None:
+        # inline return statement
+        ir_return_value = self.emit_expression(return_statement.expression)
+        self.cfb.ret(ir_return_value)  # the current cfb already knows what the current function is, so there is no need to check for it
+
     def emit_statement(self, statement: node.StatementTypes) -> None:
         # inline statement
         if isinstance(statement, node.CompoundStatement):
