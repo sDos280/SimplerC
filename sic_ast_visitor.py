@@ -329,8 +329,10 @@ class ASTVisitor:
         elif isinstance(expression, node.Identifier):
             return self.get_expression_type(expression)  # the identifier type is in checked in the get_expression_type function
         elif isinstance(expression, node.CUnaryOp):
+            self.visit_expression(expression.expression)
             return self.get_expression_type(expression)  # same as here
         elif isinstance(expression, node.CCast):
+            self.visit_expression(expression.expression)
             return self.get_expression_type(expression)  # same as here
         elif isinstance(expression, node.CTernaryOp):
             return self.visit_ternary_expression(expression)

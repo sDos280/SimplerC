@@ -128,6 +128,8 @@ class Emitter:
             elif isinstance(external_declaration, node.Declaration):
                 assert False, "SimplerC : Global declaration is not supported yet"
 
+        print(self.module)
+
     def emit_function_definition(self, function_definition: node.FunctionDefinition):
         function_ir_type = ir.FunctionType(
             self.sic_type_to_ir_type(function_definition.type_name),
