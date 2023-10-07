@@ -225,6 +225,14 @@ class Emitter:
         ir_return_value = self.emit_expression(return_statement.expression)
         self.cfb.ret(ir_return_value)  # the current cfb already knows what the current function is, so there is no need to check for it
 
+    def emit_break_statement(self, break_statement: node.Break) -> None:
+        # inline break statement
+        self.cfb.branch(self.cfb.block)
+
+    def emit_continue_statement(self, continue_statement: node.Continue) -> None:
+        # inline continue statement
+        self.cfb.branch(self.current_iteration_ir)
+
     def emit_statement(self, statement: node.StatementTypes) -> None:
         # inline statement
         if isinstance(statement, node.CompoundStatement):
