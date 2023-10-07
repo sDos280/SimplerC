@@ -126,7 +126,29 @@ class Emitter:
             if isinstance(external_declaration, node.FunctionDefinition):
                 self.emit_function_definition(external_declaration)
             elif isinstance(external_declaration, node.Declaration):
-                self.emit_declaration(external_declaration)
+                assert False, "SimplerC : Global declaration is not supported yet"
+
+    def emit_function_definition(self, function_definition: node.FunctionDefinition):
+        function_ir_type = ir.FunctionType(
+            self.sic_type_to_ir_type(function_definition.type_name),
+            [self.sic_type_to_ir_type(parameter.type_name) for parameter in function_definition.parameters_declaration]
+        )
+
+        function_ir = ir.Function(self.module, function_ir_type, name=function_definition.identifier.token.string)
+        function_ir_block = function_ir.append_basic_block(name=f'{function_definition.identifier.token.string}.entry')
+
+        self.current_function_ir = function_ir
+        self.cfb = ir.IRBuilder(function_ir_block)
+
+        # add function parameters to identifiers table
+        for parameter_ir, parameter_declaration in zip(function_ir.args, function_definition.parameters_declaration):
+            self.identifiers_table.append(StackPackage(parameter_declaration, parameter_ir))
+
+        # emit function body
+        self.emit_compound_statement(function_definition.body)
+
+        # pop function parameters from identifiers table
+        self.pop_stack_by(len(function_definition.parameters_declaration))
 
     def emit_declaration(self, declaration: node.Declaration):
         # create declaration block
