@@ -283,7 +283,21 @@ class Emitter:
         elif isinstance(expression, node.CCast):
             return self.emit_cast_expression(expression)
         elif isinstance(expression, node.CTernaryOp):
-            assert False, "not implemented"
+            # a ternary operator is basically just an if statement
+            return self.emit_if_statement(
+                node.If(
+                    condition=expression.condition,
+                    body=node.CompoundStatement(
+                        declarations=[],
+                        statements=[expression.true_value]
+                    ),
+                    else_body=node.CompoundStatement(
+                        declarations=[],
+                        statements=[expression.false_value]
+                    )
+
+                )
+            )
         elif isinstance(expression, node.FunctionCall):
             return self.emit_function_call(expression)
         elif isinstance(expression, node.CharLiteral):
