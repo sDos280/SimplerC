@@ -329,7 +329,7 @@ class ASTVisitor:
         elif isinstance(expression, node.Identifier):
             return self.get_expression_type(expression)  # the identifier type is in checked in the get_expression_type function
         elif isinstance(expression, node.CUnaryOp):
-            self.visit_expression(expression.expression)
+            self.visit_unary_expression(expression)
             return self.get_expression_type(expression)  # same as here
         elif isinstance(expression, node.CCast):
             self.visit_expression(expression.expression)
@@ -352,6 +352,19 @@ class ASTVisitor:
         self.visit_expression(binary_expression.right)
 
         return left_type
+
+    def visit_unary_expression(self, unary_expression: node.CUnaryOp) -> node.CPrimaryType:
+        # visit the unary_expression
+        self.visit_expression(unary_expression.expression)
+
+        match unary_expression.kind:
+            case node.CUnaryOpKind.PreDecrease | node.CUnaryOpKind.PostDecrease | node.CUnaryOpKind.PreIncrease | node.CUnaryOpKind.PostIncrease:
+                if not isinstance(unary_expression.expression, node.Identifier):  # in --/++ the expression must be an identifier
+                    raise SyntaxError("SimplerC : Type Error : the expression in the unary operator must be an identifier")
+
+                return self.get_expression_type(unary_expression.expression)
+            case _:
+                return self.get_expression_type(unary_expression)
 
     def visit_ternary_expression(self, ternary_expression: node.CTernaryOp) -> node.CPrimaryType:
         # check if both true and false ternary_expression are of the same type
