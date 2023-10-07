@@ -171,6 +171,8 @@ class Emitter:
         # inline while statement
         while_statement_block: ir.Block = self.cfb.append_basic_block(name='while')
 
+        self.current_iteration_ir = while_statement_block
+
         ir_condition = self.emit_expression(while_statement.condition)
 
         with self.cfb.goto_block(while_statement_block):
@@ -179,6 +181,8 @@ class Emitter:
             self.cfb.cbranch(ir_condition, while_statement_block, self.cfb.block)
 
         self.cfb.cbranch(ir_condition, while_statement_block, self.cfb.block)
+
+        self.current_iteration_ir = None
 
     def emit_compound_statement(self, compound_statement: node.CompoundStatement) -> ir.Block:
         # create compound block
