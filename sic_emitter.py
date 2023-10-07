@@ -142,6 +142,9 @@ class Emitter:
         self.current_function_ir = function_ir
         self.cfb = ir.IRBuilder(function_ir_block)
 
+        # add function to identifiers table
+        self.identifiers_table.append(StackPackage(function_definition, function_ir))
+
         # add function parameters to identifiers table and set parameters names
         for parameter_ir, parameter_declaration in zip(function_ir.args, function_definition.parameters_declaration):
             parameter_ir.name = parameter_declaration.identifier.token.string
@@ -154,24 +157,20 @@ class Emitter:
         self.pop_stack_by(len(function_definition.parameters_declaration))
 
     def emit_declaration(self, declaration: node.Declaration):
-        # create declaration block
-        declaration_block = self.cfb.append_basic_block(name=f'{declaration.identifier.token.string}.declaration')
+        # inline declaration block
 
-        with self.cfb.goto_block(declaration_block):
-            # create declaration variable
-            ir_type = self.sic_type_to_ir_type(declaration.type_name)
-            ir_variable = self.cfb.alloca(ir_type, name=declaration.identifier.token.string)
+        # create declaration variable
+        ir_type = self.sic_type_to_ir_type(declaration.type_name)
+        ir_variable = self.cfb.alloca(ir_type, name=declaration.identifier.token.string)
 
-            # add to identifiers table
-            # the caller of emit_declaration is responsible for popping the identifier from the stack
-            self.identifiers_table.append(StackPackage(declaration, ir_variable))
+        # add to identifiers table
+        # the caller of emit_declaration is responsible for popping the identifier from the stack
+        self.identifiers_table.append(StackPackage(declaration, ir_variable))
 
-            # emit initializer
-            if not isinstance(declaration.initializer, node.NoneNode):
-                ir_initializer = self.emit_expression(declaration.initializer)
-                self.cfb.store(ir_initializer, ir_variable)
-
-        return declaration_block
+        # emit initializer
+        if not isinstance(declaration.initializer, node.NoneNode):
+            ir_initializer = self.emit_expression(declaration.initializer)
+            self.cfb.store(ir_initializer, ir_variable)
 
     def emit_if_statement(self, if_statement: node.If) -> None:
         # inline if statement
@@ -236,7 +235,6 @@ class Emitter:
             self.emit_statement(statement)
 
         self.pop_stack_by(len(compound_statement.declarations))
-
 
     def emit_return_statement(self, return_statement: node.Return) -> None:
         # inline return statement
