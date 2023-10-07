@@ -179,17 +179,14 @@ class Emitter:
         if isinstance(if_statement.else_body, node.NoneNode):
             # there is no else body
             with self.cfb.if_then(ir_condition):
-                statement = self.emit_compound_statement(if_statement.body)
-                self.cfb.position_at_end(statement)
+                self.emit_compound_statement(if_statement.body)
         else:
             # there is an else body
             with self.cfb.if_else(ir_condition) as (then, otherwise):
                 with then:
-                    statement = self.emit_compound_statement(if_statement.body)
-                    self.cfb.position_at_end(statement)
+                    self.emit_compound_statement(if_statement.body)
                 with otherwise:
-                    statement = self.emit_compound_statement(if_statement.else_body)
-                    self.cfb.position_at_end(statement)
+                    self.emit_compound_statement(if_statement.else_body)
 
     def emit_while_statement(self, while_statement: node.While) -> None:
         # inline while's block statement
@@ -229,20 +226,16 @@ class Emitter:
 
         self.current_iteration_ir = None
 
-    def emit_compound_statement(self, compound_statement: node.CompoundStatement) -> ir.Block:
-        # create compound block
-        compound_block: ir.Block = self.cfb.append_basic_block(name='compound')
+    def emit_compound_statement(self, compound_statement: node.CompoundStatement) -> None:
+        # inline compound statement
+        for declaration in compound_statement.declarations:
+            self.emit_declaration(declaration)
 
-        with self.cfb.goto_block(compound_block):
-            for declaration in compound_statement.declarations:
-                self.emit_declaration(declaration)
-
-            for statement in compound_statement.statements:
-                self.emit_statement(statement)
+        for statement in compound_statement.statements:
+            self.emit_statement(statement)
 
         self.pop_stack_by(len(compound_statement.declarations))
 
-        return compound_block
 
     def emit_return_statement(self, return_statement: node.Return) -> None:
         # inline return statement
