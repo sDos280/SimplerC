@@ -279,7 +279,7 @@ class Emitter:
             for expression in expression.expressions:
                 return self.emit_expression(expression)
         elif isinstance(expression, node.CUnaryOp):
-            assert False, "not implemented"
+            return self.emit_unary_operator(expression)
         elif isinstance(expression, node.CCast):
             return self.emit_cast_expression(expression)
         elif isinstance(expression, node.CTernaryOp):
@@ -312,6 +312,83 @@ class Emitter:
             return self.look_for_ed_identifier_in_stack(expression).ir_declaration
         else:
             raise SyntaxError("SimplerC : Type Error : the node in not an expression")
+
+    def emit_unary_operator(self, expression: node.CUnaryOp) -> ir.Value:
+        match expression.kind:
+            case node.CUnaryOpKind.PreDecrease | node.CUnaryOpKind.PostDecrease | node.CUnaryOpKind.PreIncrease | node.CUnaryOpKind.PostIncrease:
+                # get the value of the expression
+                # remember that expression.expression is an identifier
+                expression_value = self.emit_expression(expression.expression)
+                expression_value_type: node.CPrimaryType = self.get_expression_type(expression.expression)
+
+                # apply the operation
+                match expression.kind:
+                    case node.CUnaryOpKind.PreDecrease | node.CUnaryOpKind.PostDecrease:
+                        if expression_value_type in [node.CPrimaryType.CHAR,
+                                                     node.CPrimaryType.SHORT,
+                                                     node.CPrimaryType.INT,
+                                                     node.CPrimaryType.LONG]:
+                            updated_value = self.cfb.sub(expression_value, ir.Constant(ir.IntType(32), 1))
+                            self.emit_store(expression.expression, updated_value)
+
+                            return updated_value
+                        else:  # float or double
+                            updated_value = self.cfb.fsub(expression_value, ir.Constant(ir.FloatType(), 1.0))
+                            self.emit_store(expression.expression, updated_value)
+
+                            return updated_value
+                    case node.CUnaryOpKind.PreIncrease | node.CUnaryOpKind.PostIncrease:
+                        if expression_value_type in [node.CPrimaryType.CHAR,
+                                                     node.CPrimaryType.SHORT,
+                                                     node.CPrimaryType.INT,
+                                                     node.CPrimaryType.LONG]:
+                            updated_value = self.cfb.add(expression_value, ir.Constant(ir.IntType(32), 1))
+                            self.emit_store(expression.expression, updated_value)
+
+                            return updated_value
+                        else:  # float or double
+                            updated_value = self.cfb.fadd(expression_value, ir.Constant(ir.FloatType(), 1.0))
+                            self.emit_store(expression.expression, updated_value)
+
+                            return updated_value
+
+            case node.CUnaryOpKind.Plus:
+                # we don't need to do anything, + is just a sign
+                return self.emit_expression(expression.expression)
+            case node.CUnaryOpKind.Minus:
+                # get the value of the expression
+                expression_value = self.emit_expression(expression.expression)
+                expression_value_type: node.CPrimaryType = self.get_expression_type(expression.expression)
+
+                # apply the operation
+                if expression_value_type in [node.CPrimaryType.CHAR,
+                                             node.CPrimaryType.SHORT,
+                                             node.CPrimaryType.INT,
+                                             node.CPrimaryType.LONG]:
+                    return self.cfb.neg(expression_value)
+                else:  # float or double
+                    return self.cfb.fneg(expression_value)
+            case node.CUnaryOpKind.LogicalNOT:
+                # get the value of the expression
+                expression_value = self.emit_expression(expression.expression)
+                expression_value_type: node.CPrimaryType = self.get_expression_type(expression.expression)
+
+                # apply the operation
+                if expression_value_type in [node.CPrimaryType.CHAR,
+                                             node.CPrimaryType.SHORT,
+                                             node.CPrimaryType.INT,
+                                             node.CPrimaryType.LONG]:
+                    return self.cfb.not_(expression_value)
+                else:  # float or double
+                    raise SyntaxError("SimplerC : Type Error : logical not cannot be applied to float or double")
+            case node.CUnaryOpKind.BitwiseNOT:
+                raise SyntaxError("SimplerC : Type Error : bitwise not is not implemented")
+            case node.CUnaryOpKind.Sizeof:
+                expression_value = self.emit_expression(expression.expression)
+                expression_value_type: node.CPrimaryType = self.get_expression_type(expression.expression)
+                expression_value_size = self.sic_type_to_ir_type(expression_value_type).get_abi_size(self.cfb)
+
+                return ir.Constant(ir.IntType(32), expression_value_size)
 
     def emit_function_call(self, expression: node.FunctionCall) -> ir.Value:
         # inline function call
