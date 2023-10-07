@@ -285,7 +285,7 @@ class Emitter:
         elif isinstance(expression, node.CTernaryOp):
             assert False, "not implemented"
         elif isinstance(expression, node.FunctionCall):
-            assert False, "not implemented"
+            return self.emit_function_call(expression)
         elif isinstance(expression, node.CharLiteral):
             return ir.Constant(ir.IntType(8), ord(expression.token.string[1]))
         elif isinstance(expression, node.ConstantLiteral):
@@ -298,6 +298,17 @@ class Emitter:
             return self.look_for_ed_identifier_in_stack(expression).ir_declaration
         else:
             raise SyntaxError("SimplerC : Type Error : the node in not an expression")
+
+    def emit_function_call(self, expression: node.FunctionCall) -> ir.Value:
+        # inline function call
+        function_ir = self.look_for_ed_identifier_in_stack(expression.identifier).ir_declaration
+
+        # get the function arguments
+        function_arguments = []
+        for argument in expression.arguments:
+            function_arguments.append(self.emit_expression(argument))
+
+        return self.cfb.call(function_ir, function_arguments)
 
     def emit_cast_expression(self, expression: node.CCast) -> ir.Value:
         # get the value of the expression
