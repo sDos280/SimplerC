@@ -313,7 +313,7 @@ class Emitter:
                 return ir.Constant(ir.IntType(32), int(expression.token.string))
         elif isinstance(expression, node.Identifier):
             # return the ir variable of the identifier
-            return self.look_for_ed_identifier_in_stack(expression).ir_declaration
+            return self.cfb.load(self.look_for_ed_identifier_in_stack(expression).ir_declaration)
         else:
             raise SyntaxError("SimplerC : Type Error : the node in not an expression")
 
