@@ -122,13 +122,17 @@ class Emitter:
     # -------------------------------------------------------
     # emit functions
     def emit_translation_unit(self):
+        """
+        this function is used to emit the translation unit
+        :return: a string of the llvm ir of the translation unit
+        """
         for external_declaration in self.translation_unit:
             if isinstance(external_declaration, node.FunctionDefinition):
                 self.emit_function_definition(external_declaration)
             elif isinstance(external_declaration, node.Declaration):
                 assert False, "SimplerC : Global declaration is not supported yet"
 
-        print(self.module)
+        return str(self.module)
 
     def emit_function_definition(self, function_definition: node.FunctionDefinition):
         function_ir_type = ir.FunctionType(
