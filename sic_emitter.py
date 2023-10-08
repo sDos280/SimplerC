@@ -147,8 +147,12 @@ class Emitter:
 
         # add function parameters to identifiers table and set parameters names
         for parameter_ir, parameter_declaration in zip(function_ir.args, function_definition.parameters_declaration):
-            parameter_ir.name = parameter_declaration.identifier.token.string
-            self.identifiers_table.append(StackPackage(parameter_declaration, parameter_ir))
+            self.emit_declaration(
+                            node.Declaration(
+                                parameter_declaration.type_name,
+                                (node.Identifier(parameter_declaration.identifier.token), parameter_declaration.initializer),
+                            )
+                        )
 
         # emit function body
         self.emit_compound_statement(function_definition.body)
