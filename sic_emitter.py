@@ -151,12 +151,14 @@ class Emitter:
 
         # add function parameters to identifiers table and set parameters names
         for parameter_ir, parameter_declaration in zip(function_ir.args, function_definition.parameters_declaration):
-            self.emit_declaration(
-                            node.Declaration(
-                                parameter_declaration.type_name,
-                                (node.Identifier(parameter_declaration.identifier.token), parameter_declaration.initializer),
-                            )
-                        )
+            ir_type = self.sic_type_to_ir_type(parameter_declaration.type_name)
+            ir_variable = self.cfb.alloca(ir_type, name=parameter_declaration.identifier.token.string)
+
+            # add parameter to identifiers table
+            self.identifiers_table.append(StackPackage(parameter_declaration, ir_variable))
+
+            # store the parameter value into the variable
+            self.cfb.store(parameter_ir, ir_variable)
 
         # emit function body
         self.emit_compound_statement(function_definition.body)

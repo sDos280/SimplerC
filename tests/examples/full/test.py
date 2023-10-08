@@ -35,4 +35,4 @@ func_ptr = engine.get_function_address("fibonacci")
 # Run the function via ctypes
 cfunc = CFUNCTYPE(c_int)(func_ptr)
 for i in range(10):
-    print(f"cfunc({i}) = {cfunc(i)}")
+    print(f"fibonacci({i}) = {cfunc(i)}")
