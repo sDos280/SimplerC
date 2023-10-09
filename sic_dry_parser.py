@@ -11,6 +11,10 @@ import sic_lexer as lx
 import sic_node as node
 
 
+class DryParserError(Exception):
+    pass
+
+
 class DryParser:
     def __init__(self, lexer: lx.Lexer):
         self.lexer = lexer
@@ -48,8 +52,6 @@ class DryParser:
             tk.TokenKind.LONG,
             tk.TokenKind.FLOAT,
             tk.TokenKind.DOUBLE,
-            tk.TokenKind.SIGNED,
-            tk.TokenKind.UNSIGNED
         ])
 
     def is_token_type_specifier(self) -> bool:
@@ -581,14 +583,6 @@ class DryParser:
                 self.peek_token()  # peek double token
 
                 return node.CTypeSpecifier.DOUBLE
-            case tk.TokenKind.SIGNED:
-                self.peek_token()  # peek signed token
-
-                return node.CTypeSpecifier.SIGNED
-            case tk.TokenKind.UNSIGNED:
-                self.peek_token()  # peek unsigned token
-
-                return node.CTypeSpecifier.UNSIGNED
 
     def peek_parameter_list(self) -> list[node.Declaration]:
         parameter_list: list[node.Declaration] = [self.peek_parameter_declaration()]
@@ -614,10 +608,7 @@ class DryParser:
 
         while self.is_token_type_specifier():
             specifier: node.CTypeSpecifier = self.peek_type_specifier()
-            if specifier == node.CTypeSpecifier.UNSIGNED or specifier == node.CTypeSpecifier.SIGNED:
-                specifier_counter |= specifier
-            else:
-                specifier_counter += specifier
+            specifier_counter += specifier
 
             c_primary_type = node.c_type_specifier_counter_to_c_primary_type.get(specifier_counter)
 

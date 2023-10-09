@@ -7,10 +7,8 @@ class TokenKind(enum.Enum):
     COMMENT = enum.auto()  # // ... \n or /* ... */
 
     # Keywords
-    UNSIGNED = enum.auto()  # unsigned
     CONTINUE = enum.auto()  # continue
     SIZEOF = enum.auto()  # sizeof
-    SIGNED = enum.auto()  # signed
     RETURN = enum.auto()  # return
     DOUBLE = enum.auto()  # double
     WHILE = enum.auto()  # while
@@ -88,10 +86,8 @@ class TokenKind(enum.Enum):
 # string to keyword dictionary
 string_to_keyword: dict[str, TokenKind] = {
     # the token hierarchy is by string length
-    "unsigned": TokenKind.UNSIGNED,
     "continue": TokenKind.CONTINUE,
     "sizeof": TokenKind.SIZEOF,
-    "signed": TokenKind.SIGNED,
     "return": TokenKind.RETURN,
     "double": TokenKind.DOUBLE,
     "while": TokenKind.WHILE,
