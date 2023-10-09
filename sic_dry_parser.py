@@ -155,7 +155,7 @@ class DryParser:
         elif self.is_token_kind(tk.TokenKind.OPENING_PARENTHESIS):
             self.peek_token()  # peek ( token
 
-            expression: node.Expression = self.peek_expression()
+            expression: node.ExpressionTypes = self.peek_expression()
 
             self.peek_token()  # peek ) token
 
@@ -488,7 +488,7 @@ class DryParser:
         if self.is_token_kind(tk.TokenKind.QUESTION_MARK):
             self.peek_token()  # peek the ? token
 
-            expression: node.Expression = self.peek_expression()
+            expression: node.ExpressionTypes = self.peek_expression()
 
             self.expect_token_kind(tk.TokenKind.COLON, "Expected ':' in conditional expressions")
 
@@ -512,15 +512,8 @@ class DryParser:
         else:
             return conditional_expression
 
-    def peek_expression(self) -> node.Expression:
-        expression: node.Expression = node.Expression([self.peek_assignment_expression()])
-
-        while self.is_token_kind(tk.TokenKind.COMMA):
-            self.peek_token()  # peek the , token
-
-            expression.expressions.append(self.peek_assignment_expression())
-
-        return expression
+    def peek_expression(self) -> node.ExpressionTypes:
+        return self.peek_assignment_expression()
 
     def peek_constant_expression(self) -> node.Node:
         return self.peek_conditional_expression()
@@ -673,13 +666,13 @@ class DryParser:
     def peek_statement_list(self):
         pass
 
-    def peek_expression_statement(self) -> node.Expression | node.NoneNode:
+    def peek_expression_statement(self) -> node.ExpressionTypes | node.NoneNode:
         if self.is_token_kind(tk.TokenKind.SEMICOLON):
             self.peek_token()  # peek the ; token
 
             return node.NoneNode()
         else:
-            expression: node.Expression = self.peek_expression()
+            expression: node.ExpressionTypes = self.peek_expression()
 
             self.expect_token_kind(tk.TokenKind.SEMICOLON, "Expected ';' in expression statement")
             self.peek_token()  # peek the ; token
@@ -693,7 +686,7 @@ class DryParser:
         self.expect_token_kind(tk.TokenKind.OPENING_PARENTHESIS, "Expected '(' in selection statement")
         self.peek_token()  # peek the ( token
 
-        decision_expression: node.Expression = self.peek_expression()
+        decision_expression: node.ExpressionTypes = self.peek_expression()
 
         self.expect_token_kind(tk.TokenKind.CLOSING_PARENTHESIS, "Expected ')' in selection statement")
         self.peek_token()  # peek the ) token
@@ -716,7 +709,7 @@ class DryParser:
             self.expect_token_kind(tk.TokenKind.OPENING_PARENTHESIS, "Expected '(' in while statement")
             self.peek_token()  # peek ( token
 
-            condition: node.Expression = self.peek_expression()
+            condition: node.ExpressionTypes = self.peek_expression()
 
             self.expect_token_kind(tk.TokenKind.CLOSING_PARENTHESIS, "Expected ')' in while statement")
             self.peek_token()  # peek ) token
@@ -731,8 +724,8 @@ class DryParser:
             self.peek_token()  # peek ( token
 
             initializer: node.Node = self.peek_expression_statement()
-            condition: node.Expression = self.peek_expression_statement()
-            update: node.Expression = self.peek_expression()
+            condition: node.ExpressionTypes = self.peek_expression_statement()
+            update: node.ExpressionTypes = self.peek_expression()
 
             self.expect_token_kind(tk.TokenKind.CLOSING_PARENTHESIS, "Expected ')' in for statement")
             self.peek_token()  # peek ) token
