@@ -223,17 +223,6 @@ class CTernaryOp:
         }
 
 
-class Expression:
-    def __init__(self, sub_expression: list[Node]):
-        self.expressions = sub_expression
-
-    def to_dict(self):
-        return {
-            "node": "Expression",
-            "expressions": [expression.to_dict() for expression in self.expressions]
-        }
-
-
 class Declaration:
     def __init__(self, type_name: TypeName, declarator: Declarator):
         self.type_name = type_name
@@ -401,7 +390,6 @@ Node = typing.Union[NoneNode,
                     CUnaryOp, CCast,
                     CBinaryOp,
                     CTernaryOp,
-                    Expression,
                     TypeName,
                     Continue,
                     Break,
@@ -417,7 +405,6 @@ Node = typing.Union[NoneNode,
 
 ExpressionTypes = typing.Union[
     NoneNode,
-    Expression,
     CBinaryOp,
     CharLiteral,
     ConstantLiteral,
@@ -432,7 +419,6 @@ StatementTypes = typing.Union[
     NoneNode,
     CompoundStatement,
     ExpressionTypes,
-    Expression,
     Continue,
     Break,
     Return,
