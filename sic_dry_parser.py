@@ -137,7 +137,7 @@ class DryParser:
             self.fatal_token("Expected assignment operator token")
 
     # dry parser grammar peek methods
-    def peek_primary_expression(self) -> node.Node | list[node.Node]:
+    def peek_primary_expression(self) -> node.ExpressionTypes:
         if self.is_token_kind(tk.TokenKind.IDENTIFIER):
             return self.peek_identifier()
         elif self.is_token_kind([tk.TokenKind.INTEGER_LITERAL, tk.TokenKind.FLOAT_LITERAL]):
@@ -163,13 +163,13 @@ class DryParser:
         else:
             self.fatal_token("primary token expected")
 
-    def peek_postfix_expression(self) -> node.Node:
-        primary_expression: node.Node = self.peek_primary_expression()
+    def peek_postfix_expression(self) -> node.ExpressionTypes:
+        primary_expression: node.ExpressionTypes = self.peek_primary_expression()
 
         if self.is_token_kind(tk.TokenKind.OPENING_PARENTHESIS):
             self.peek_token()  # peek ( token
 
-            argument_expression_list: list[node.Node] = []
+            argument_expression_list: list[node.ExpressionTypes] = []
 
             if not self.is_token_kind(tk.TokenKind.CLOSING_PARENTHESIS):
                 argument_expression_list = self.peek_argument_expression_list()
@@ -189,8 +189,8 @@ class DryParser:
         else:
             return primary_expression
 
-    def peek_argument_expression_list(self) -> list[node.Node]:
-        argument_expression_list: list[node.Node] = [self.peek_assignment_expression()]
+    def peek_argument_expression_list(self) -> list[node.ExpressionTypes]:
+        argument_expression_list: list[node.ExpressionTypes] = [self.peek_assignment_expression()]
 
         while self.is_token_kind(tk.TokenKind.COMMA):
             self.peek_token()  # peek , token
@@ -199,7 +199,7 @@ class DryParser:
 
         return argument_expression_list
 
-    def peek_unary_expression(self) -> node.Node:
+    def peek_unary_expression(self) -> node.ExpressionTypes:
         match self.current_token.kind:
             # INC_OP unary_expression
             # DEC_OP unary_expression
@@ -210,13 +210,13 @@ class DryParser:
             case tk.TokenKind.INC_OP:
                 self.peek_token()  # peek ++ token
 
-                unary_expression: node.Node = self.peek_unary_expression()
+                unary_expression: node.ExpressionTypes = self.peek_unary_expression()
 
                 return node.CUnaryOp(node.CUnaryOpKind.PreIncrease, unary_expression)
             case tk.TokenKind.DEC_OP:
                 self.peek_token()  # peek -- token
 
-                unary_expression: node.Node = self.peek_unary_expression()
+                unary_expression: node.ExpressionTypes = self.peek_unary_expression()
 
                 return node.CUnaryOp(node.CUnaryOpKind.PreDecrease, unary_expression)
             case tk.TokenKind.SIZEOF:
@@ -232,31 +232,31 @@ class DryParser:
 
                     return node.CUnaryOp(node.CUnaryOpKind.Sizeof, type_name)
                 else:
-                    unary_expression: node.Node = self.peek_unary_expression()
+                    unary_expression: node.ExpressionTypes = self.peek_unary_expression()
 
                     return node.CUnaryOp(node.CUnaryOpKind.Sizeof, unary_expression)
             case tk.TokenKind.PLUS:
                 self.peek_token()  # peek + token
 
-                cast_expression: node.Node = self.peek_cast_expression()
+                cast_expression: node.ExpressionTypes = self.peek_cast_expression()
 
                 return node.CUnaryOp(node.CUnaryOpKind.Plus, cast_expression)
             case tk.TokenKind.HYPHEN:
                 self.peek_token()  # peek - token
 
-                cast_expression: node.Node = self.peek_cast_expression()
+                cast_expression: node.ExpressionTypes = self.peek_cast_expression()
 
                 return node.CUnaryOp(node.CUnaryOpKind.Minus, cast_expression)
             case tk.TokenKind.TILDE:
                 self.peek_token()  # peek ~ token
 
-                cast_expression: node.Node = self.peek_cast_expression()
+                cast_expression: node.ExpressionTypes = self.peek_cast_expression()
 
                 return node.CUnaryOp(node.CUnaryOpKind.BitwiseNOT, cast_expression)
             case tk.TokenKind.EXCLAMATION:
                 self.peek_token()  # peek ! token
 
-                cast_expression: node.Node = self.peek_cast_expression()
+                cast_expression: node.ExpressionTypes = self.peek_cast_expression()
 
                 return node.CUnaryOp(node.CUnaryOpKind.LogicalNOT, cast_expression)
 
@@ -283,7 +283,7 @@ class DryParser:
 
         self.fatal_token("unary operator expected")
 
-    def peek_cast_expression(self) -> node.Node:
+    def peek_cast_expression(self) -> node.ExpressionTypes:
         if self.is_token_kind(tk.TokenKind.OPENING_PARENTHESIS):
             self.peek_token()  # peek ( token
 
@@ -292,198 +292,198 @@ class DryParser:
 
                 self.peek_token()  # peek ) token
 
-                cast_expression: node.Node = self.peek_cast_expression()
+                cast_expression: node.ExpressionTypes = self.peek_cast_expression()
 
                 return node.CCast(type_name, cast_expression)
             else:
                 self.drop_token()  # drop ( token
 
-        unary_expression: node.Node = self.peek_unary_expression()
+        unary_expression: node.ExpressionTypes = self.peek_unary_expression()
 
         return unary_expression
 
-    def peek_multiplicative_expression(self) -> node.Node:
-        cast_expression: node.Node = self.peek_cast_expression()
+    def peek_multiplicative_expression(self) -> node.ExpressionTypes:
+        cast_expression: node.ExpressionTypes = self.peek_cast_expression()
 
         while True:
             if self.is_token_kind(tk.TokenKind.ASTERISK):
                 self.peek_token()  # peek * token
 
-                sub_cast_expression: node.Node = self.peek_cast_expression()
+                sub_cast_expression: node.ExpressionTypes = self.peek_cast_expression()
 
                 cast_expression = node.CBinaryOp(node.CBinaryOpKind.Multiplication, cast_expression, sub_cast_expression)
             elif self.is_token_kind(tk.TokenKind.SLASH):
                 self.peek_token()  # peek / token
 
-                sub_cast_expression: node.Node = self.peek_cast_expression()
+                sub_cast_expression: node.ExpressionTypes = self.peek_cast_expression()
 
                 cast_expression = node.CBinaryOp(node.CBinaryOpKind.Division, cast_expression, sub_cast_expression)
             elif self.is_token_kind(tk.TokenKind.PERCENTAGE):
                 self.peek_token()  # peek % token
 
-                sub_cast_expression: node.Node = self.peek_cast_expression()
+                sub_cast_expression: node.ExpressionTypes = self.peek_cast_expression()
 
                 cast_expression = node.CBinaryOp(node.CBinaryOpKind.Modulus, cast_expression, sub_cast_expression)
             else:
                 return cast_expression
 
-    def peek_additive_expression(self) -> node.Node:
-        multiplicative_expression: node.Node = self.peek_multiplicative_expression()
+    def peek_additive_expression(self) -> node.ExpressionTypes:
+        multiplicative_expression: node.ExpressionTypes = self.peek_multiplicative_expression()
 
         while True:
             if self.is_token_kind(tk.TokenKind.PLUS):
                 self.peek_token()  # peek + token
 
-                sub_multiplicative_expression: node.Node = self.peek_multiplicative_expression()
+                sub_multiplicative_expression: node.ExpressionTypes = self.peek_multiplicative_expression()
 
                 multiplicative_expression = node.CBinaryOp(node.CBinaryOpKind.Addition, multiplicative_expression, sub_multiplicative_expression)
             elif self.is_token_kind(tk.TokenKind.HYPHEN):
                 self.peek_token()  # peek - token
 
-                sub_multiplicative_expression: node.Node = self.peek_multiplicative_expression()
+                sub_multiplicative_expression: node.ExpressionTypes = self.peek_multiplicative_expression()
 
                 multiplicative_expression = node.CBinaryOp(node.CBinaryOpKind.Subtraction, multiplicative_expression, sub_multiplicative_expression)
             else:
                 return multiplicative_expression
 
-    def peek_shift_expression(self) -> node.Node:
-        additive_expression: node.Node = self.peek_additive_expression()
+    def peek_shift_expression(self) -> node.ExpressionTypes:
+        additive_expression: node.ExpressionTypes = self.peek_additive_expression()
 
         while True:
             if self.is_token_kind(tk.TokenKind.LEFT_OP):
                 self.peek_token()  # peek << token
 
-                sub_additive_expression: node.Node = self.peek_additive_expression()
+                sub_additive_expression: node.ExpressionTypes = self.peek_additive_expression()
 
                 additive_expression = node.CBinaryOp(node.CBinaryOpKind.LeftShift, additive_expression, sub_additive_expression)
             elif self.is_token_kind(tk.TokenKind.RIGHT_OP):
                 self.peek_token()  # peek >> token
 
-                sub_additive_expression: node.Node = self.peek_additive_expression()
+                sub_additive_expression: node.ExpressionTypes = self.peek_additive_expression()
 
                 additive_expression = node.CBinaryOp(node.CBinaryOpKind.RightShift, additive_expression, sub_additive_expression)
             else:
                 return additive_expression
 
-    def peek_relational_expression(self) -> node.Node:
-        shift_expression: node.Node = self.peek_shift_expression()
+    def peek_relational_expression(self) -> node.ExpressionTypes:
+        shift_expression: node.ExpressionTypes = self.peek_shift_expression()
 
         while True:
             if self.is_token_kind(tk.TokenKind.LESS_THAN):
                 self.peek_token()  # peek the < token
 
-                sub_shift_expression: node.Node = self.peek_shift_expression()
+                sub_shift_expression: node.ExpressionTypes = self.peek_shift_expression()
 
                 shift_expression = node.CBinaryOp(node.CBinaryOpKind.LessThan, shift_expression, sub_shift_expression)
 
             elif self.is_token_kind(tk.TokenKind.GREATER_THAN):
                 self.peek_token()  # peek the > token
 
-                sub_shift_expression: node.Node = self.peek_shift_expression()
+                sub_shift_expression: node.ExpressionTypes = self.peek_shift_expression()
 
                 shift_expression = node.CBinaryOp(node.CBinaryOpKind.GreaterThan, shift_expression, sub_shift_expression)
 
             elif self.is_token_kind(tk.TokenKind.LE_OP):
                 self.peek_token()  # peek the <= token
 
-                sub_shift_expression: node.Node = self.peek_shift_expression()
+                sub_shift_expression: node.ExpressionTypes = self.peek_shift_expression()
 
                 shift_expression = node.CBinaryOp(node.CBinaryOpKind.LessThanOrEqualTo, shift_expression, sub_shift_expression)
 
             elif self.is_token_kind(tk.TokenKind.GE_OP):
                 self.peek_token()  # peek the >= token
 
-                sub_shift_expression: node.Node = self.peek_shift_expression()
+                sub_shift_expression: node.ExpressionTypes = self.peek_shift_expression()
 
                 shift_expression = node.CBinaryOp(node.CBinaryOpKind.GreaterThanOrEqualTo, shift_expression, sub_shift_expression)
 
             else:
                 return shift_expression
 
-    def peek_equality_expression(self) -> node.Node:
-        relational_expression: node.Node = self.peek_relational_expression()
+    def peek_equality_expression(self) -> node.ExpressionTypes:
+        relational_expression: node.ExpressionTypes = self.peek_relational_expression()
 
         while True:
             if self.is_token_kind(tk.TokenKind.EQ_OP):
                 self.peek_token()  # peek the == token
 
-                sub_relational_expression: node.Node = self.peek_relational_expression()
+                sub_relational_expression: node.ExpressionTypes = self.peek_relational_expression()
 
                 relational_expression = node.CBinaryOp(node.CBinaryOpKind.EqualTo, relational_expression, sub_relational_expression)
 
             elif self.is_token_kind(tk.TokenKind.NE_OP):
                 self.peek_token()  # peek the != token
 
-                sub_relational_expression: node.Node = self.peek_relational_expression()
+                sub_relational_expression: node.ExpressionTypes = self.peek_relational_expression()
 
                 relational_expression = node.CBinaryOp(node.CBinaryOpKind.NotEqualTo, relational_expression, sub_relational_expression)
 
             else:
                 return relational_expression
 
-    def peek_and_expression(self) -> node.Node:
-        equality_expression: node.Node = self.peek_equality_expression()
+    def peek_and_expression(self) -> node.ExpressionTypes:
+        equality_expression: node.ExpressionTypes = self.peek_equality_expression()
 
         while self.is_token_kind(tk.TokenKind.AMPERSAND):
             self.peek_token()  # peek the & token
 
-            sub_equality_expression: node.Node = self.peek_equality_expression()
+            sub_equality_expression: node.ExpressionTypes = self.peek_equality_expression()
 
             equality_expression = node.CBinaryOp(node.CBinaryOpKind.BitwiseAND, equality_expression, sub_equality_expression)
 
         return equality_expression
 
-    def peek_exclusive_or_expression(self) -> node.Node:
-        and_expression: node.Node = self.peek_and_expression()
+    def peek_exclusive_or_expression(self) -> node.ExpressionTypes:
+        and_expression: node.ExpressionTypes = self.peek_and_expression()
 
         while self.is_token_kind(tk.TokenKind.CIRCUMFLEX):
             self.peek_token()  # peek the ^ token
 
-            sub_and_expression: node.Node = self.peek_and_expression()
+            sub_and_expression: node.ExpressionTypes = self.peek_and_expression()
 
             and_expression = node.CBinaryOp(node.CBinaryOpKind.BitwiseXOR, and_expression, sub_and_expression)
 
         return and_expression
 
-    def peek_inclusive_or_expression(self) -> node.Node:
-        exclusive_or_expression: node.Node = self.peek_exclusive_or_expression()
+    def peek_inclusive_or_expression(self) -> node.ExpressionTypes:
+        exclusive_or_expression: node.ExpressionTypes = self.peek_exclusive_or_expression()
 
         while self.is_token_kind(tk.TokenKind.VERTICAL_BAR):
             self.peek_token()  # peek the | token
 
-            sub_exclusive_or_expression: node.Node = self.peek_exclusive_or_expression()
+            sub_exclusive_or_expression: node.ExpressionTypes = self.peek_exclusive_or_expression()
 
             exclusive_or_expression = node.CBinaryOp(node.CBinaryOpKind.BitwiseOR, exclusive_or_expression, sub_exclusive_or_expression)
 
         return exclusive_or_expression
 
-    def peek_logical_and_expression(self) -> node.Node:
-        inclusive_or_expression: node.Node = self.peek_inclusive_or_expression()
+    def peek_logical_and_expression(self) -> node.ExpressionTypes:
+        inclusive_or_expression: node.ExpressionTypes = self.peek_inclusive_or_expression()
 
         while True:
             if self.is_token_kind(tk.TokenKind.AND_OP):
                 self.peek_token()  # peek the && token
 
-                sub_inclusive_or_expression: node.Node = self.peek_inclusive_or_expression()
+                sub_inclusive_or_expression: node.ExpressionTypes = self.peek_inclusive_or_expression()
 
                 inclusive_or_expression = node.CBinaryOp(node.CBinaryOpKind.LogicalAND, inclusive_or_expression, sub_inclusive_or_expression)
             else:
                 return inclusive_or_expression
 
-    def peek_logical_or_expression(self) -> node.Node:
-        logical_and_expression: node.Node = self.peek_logical_and_expression()
+    def peek_logical_or_expression(self) -> node.ExpressionTypes:
+        logical_and_expression: node.ExpressionTypes = self.peek_logical_and_expression()
 
         while self.is_token_kind(tk.TokenKind.OR_OP):
             self.peek_token()  # peek the || token
 
-            sub_logical_and_expression: node.Node = self.peek_logical_and_expression()
+            sub_logical_and_expression: node.ExpressionTypes = self.peek_logical_and_expression()
 
             logical_and_expression = node.CBinaryOp(node.CBinaryOpKind.LogicalOR, logical_and_expression, sub_logical_and_expression)
 
         return logical_and_expression
 
-    def peek_conditional_expression(self) -> node.Node:
-        logical_or_expression: node.Node = self.peek_logical_or_expression()
+    def peek_conditional_expression(self) -> node.ExpressionTypes:
+        logical_or_expression: node.ExpressionTypes = self.peek_logical_or_expression()
 
         if self.is_token_kind(tk.TokenKind.QUESTION_MARK):
             self.peek_token()  # peek the ? token
@@ -494,19 +494,19 @@ class DryParser:
 
             self.peek_token()  # peek the : token
 
-            conditional_expression: node.Node = self.peek_conditional_expression()
+            conditional_expression: node.ExpressionTypes = self.peek_conditional_expression()
 
             return node.CTernaryOp(logical_or_expression, expression, conditional_expression)
 
         return logical_or_expression
 
-    def peek_assignment_expression(self) -> node.Node:
-        conditional_expression: node.Node = self.peek_conditional_expression()
+    def peek_assignment_expression(self) -> node.ExpressionTypes:
+        conditional_expression: node.ExpressionTypes = self.peek_conditional_expression()
 
         if self.is_assignment_operator():
             binary_assignment_op: node.CBinaryOpKind = self.peek_assignment_operator()  # peek assignment operator token
 
-            sub_assignment_expression: node.Node = self.peek_assignment_expression()
+            sub_assignment_expression: node.ExpressionTypes = self.peek_assignment_expression()
 
             return node.CBinaryOp(binary_assignment_op, conditional_expression, sub_assignment_expression)
         else:
@@ -515,7 +515,7 @@ class DryParser:
     def peek_expression(self) -> node.ExpressionTypes:
         return self.peek_assignment_expression()
 
-    def peek_constant_expression(self) -> node.Node:
+    def peek_constant_expression(self) -> node.ExpressionTypes:
         return self.peek_conditional_expression()
 
     def peek_declaration(self) -> node.Declaration:
@@ -537,12 +537,12 @@ class DryParser:
         self.peek_token()  # peek identifier token
 
         identifier: node.Identifier = node.Identifier(token)
-        initializer: node.Node = node.NoneNode()
+        initializer: node.ExpressionTypes | node.NoneNode = node.NoneNode()
 
         if self.is_token_kind(tk.TokenKind.EQUALS):
             self.peek_token()  # peek the = token
 
-            initializer: node.Node = self.peek_initializer()
+            initializer = self.peek_initializer()
 
         return identifier, initializer
 
@@ -616,10 +616,10 @@ class DryParser:
     def peek_type_name(self) -> node.TypeName:
         return self.peek_specifier_list()
 
-    def peek_initializer(self) -> node.Node:
+    def peek_initializer(self) -> node.ExpressionTypes:
         return self.peek_assignment_expression()
 
-    def peek_statement(self) -> node.Node:
+    def peek_statement(self) -> node.StatementTypes:
         if self.is_compound_statement():
             return self.peek_compound_statement()
         elif self.is_selection_statement():
@@ -691,18 +691,18 @@ class DryParser:
         self.expect_token_kind(tk.TokenKind.CLOSING_PARENTHESIS, "Expected ')' in selection statement")
         self.peek_token()  # peek the ) token
 
-        if_statement: node.Node = self.peek_statement()
+        if_statement: node.StatementTypes = self.peek_statement()
 
         if self.is_token_kind(tk.TokenKind.ELSE):
             self.peek_token()  # peek the else token
 
-            else_statement: node.Node = self.peek_statement()
+            else_statement: node.StatementTypes = self.peek_statement()
 
             return node.If(decision_expression, if_statement, else_statement)
 
         return node.If(decision_expression, if_statement, node.NoneNode())
 
-    def peek_iteration_statement(self) -> node.Node:
+    def peek_iteration_statement(self) -> node.StatementTypes:
         if self.is_token_kind(tk.TokenKind.WHILE):
             self.peek_token()  # peek while token
 
@@ -714,7 +714,7 @@ class DryParser:
             self.expect_token_kind(tk.TokenKind.CLOSING_PARENTHESIS, "Expected ')' in while statement")
             self.peek_token()  # peek ) token
 
-            statement: node.Node = self.peek_statement()
+            statement: node.StatementTypes = self.peek_statement()
 
             return node.While(condition, statement)
         elif self.is_token_kind(tk.TokenKind.FOR):
@@ -723,20 +723,20 @@ class DryParser:
             self.expect_token_kind(tk.TokenKind.OPENING_PARENTHESIS, "Expected '(' in for statement")
             self.peek_token()  # peek ( token
 
-            initializer: node.Node = self.peek_expression_statement()
+            initializer: node.ExpressionTypes = self.peek_expression_statement()
             condition: node.ExpressionTypes = self.peek_expression_statement()
             update: node.ExpressionTypes = self.peek_expression()
 
             self.expect_token_kind(tk.TokenKind.CLOSING_PARENTHESIS, "Expected ')' in for statement")
             self.peek_token()  # peek ) token
 
-            statement: node.Node = self.peek_statement()
+            statement: node.StatementTypes = self.peek_statement()
 
             return node.For(initializer, condition, update, statement)
         else:
             self.fatal_token("Expected iteration statement")
 
-    def peek_jump_statement(self) -> node.Node:
+    def peek_jump_statement(self) -> node.StatementTypes:
         if self.is_token_kind(tk.TokenKind.CONTINUE):
             continue_node: node.Continue = node.Continue(self.current_token)
             self.peek_token()  # peek continue token
