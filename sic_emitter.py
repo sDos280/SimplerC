@@ -263,8 +263,6 @@ class Emitter:
         # inline statement
         if isinstance(statement, node.CompoundStatement):
             self.emit_compound_statement(statement)
-        elif isinstance(statement, node.Expression):
-            self.emit_expression(statement)
         elif isinstance(statement, node.If):
             self.emit_if_statement(statement)
         elif isinstance(statement, node.While):
@@ -285,9 +283,6 @@ class Emitter:
 
         if isinstance(expression, node.CBinaryOp):
             return self.emit_binary_operator(expression)
-        elif isinstance(expression, node.Expression):
-            for expression in expression.expressions:
-                return self.emit_expression(expression)
         elif isinstance(expression, node.CUnaryOp):
             return self.emit_unary_operator(expression)
         elif isinstance(expression, node.CCast):
