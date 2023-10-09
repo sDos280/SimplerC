@@ -319,9 +319,6 @@ class ASTVisitor:
         """recursive function to visit an expression, return the type of the expression"""
         if isinstance(expression, node.CBinaryOp):
             return self.visit_binary_expression(expression)
-        elif isinstance(expression, node.Expression):
-            for expression in expression.expressions:
-                return self.visit_expression(expression)
         elif isinstance(expression, node.CharLiteral):
             return self.get_expression_type(expression)
         elif isinstance(expression, node.ConstantLiteral):
@@ -372,7 +369,7 @@ class ASTVisitor:
         if true_type != self.get_expression_type(ternary_expression.false_value):
             raise SyntaxError("SimplerC : Type Error : the ternary operator must have the same type for both expressions")
 
-        # visit the true and the false of the ternary_expression
+        # visit the true and the false value of the ternary_expression
         self.visit_expression(ternary_expression.true_value)
         self.visit_expression(ternary_expression.false_value)
 
