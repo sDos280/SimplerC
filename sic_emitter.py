@@ -263,6 +263,7 @@ class Emitter:
 
         # emit while body
         with self.cfb.goto_block(basic_block_for_body):
+            self.emit_expression(for_statement.update)
             self.emit_compound_statement(for_statement.body)
             self.cfb.branch(basic_block_for_condition)
 
@@ -304,6 +305,9 @@ class Emitter:
 
     def emit_continue_statement(self, continue_statement: node.Continue) -> None:
         # inline continue statement
+        if self.current_iteration_condition_block is None:
+            raise SyntaxError("continue statement outside of iteration statement")
+
         self.cfb.branch(self.current_iteration_condition_block)
 
     def emit_statement(self, statement: node.StatementTypes) -> None:
