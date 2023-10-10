@@ -265,6 +265,8 @@ class Emitter:
             self.emit_compound_statement(statement)
         elif isinstance(statement, node.If):
             self.emit_if_statement(statement)
+        elif isinstance(statement, node.ExpressionTypes):
+            self.emit_expression(statement)
         elif isinstance(statement, node.While):
             self.emit_while_statement(statement)
         elif isinstance(statement, node.For):
