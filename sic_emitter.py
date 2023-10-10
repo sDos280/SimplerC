@@ -3,10 +3,9 @@
 the emitter job is to emit the ast code
 
 """
-import enum
+import sic_utils
 import sic_node as node
 import llvmlite.ir as ir
-import llvmlite
 
 
 class StackPackage:
@@ -202,9 +201,10 @@ class Emitter:
                     self.emit_compound_statement(if_statement.else_body)
 
     def emit_while_statement(self, while_statement: node.While) -> None:
-        basic_block_while_condition = self.cfb.append_basic_block()
-        basic_block_while_body = self.cfb.append_basic_block()
-        basic_block_end_while = self.cfb.append_basic_block()
+        current_basic_block = self.cfb.basic_block
+        basic_block_while_condition = self.cfb.append_basic_block(name=sic_utils.label_suffix(current_basic_block.name, '.while.condition'))
+        basic_block_while_body = self.cfb.append_basic_block(name=sic_utils.label_suffix(current_basic_block.name, '.while.body'))
+        basic_block_end_while = self.cfb.append_basic_block(name=sic_utils.label_suffix(current_basic_block.name, '.while.end'))
 
         old_current_iteration_condition_block = self.current_iteration_condition_block
         old_current_iteration_end_block = self.current_iteration_end_block
@@ -240,9 +240,10 @@ class Emitter:
         self.current_iteration_end_block = None
 
     def emit_for_statement(self, for_statement: node.For) -> None:
-        basic_block_for_condition = self.cfb.append_basic_block()
-        basic_block_for_body = self.cfb.append_basic_block()
-        basic_block_end_for = self.cfb.append_basic_block()
+        current_basic_block = self.cfb.basic_block
+        basic_block_for_condition = self.cfb.append_basic_block(name=sic_utils.label_suffix(current_basic_block.name, '.for.condition'))
+        basic_block_for_body = self.cfb.append_basic_block(name=sic_utils.label_suffix(current_basic_block.name, '.for.body'))
+        basic_block_end_for = self.cfb.append_basic_block(name=sic_utils.label_suffix(current_basic_block.name, '.for.end'))
 
         old_current_iteration_condition_block = self.current_iteration_condition_block
         old_current_iteration_end_block = self.current_iteration_end_block
