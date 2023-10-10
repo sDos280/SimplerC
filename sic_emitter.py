@@ -206,6 +206,9 @@ class Emitter:
         basic_block_while_body = self.cfb.append_basic_block()
         basic_block_end_while = self.cfb.append_basic_block()
 
+        old_current_iteration_condition_block = self.current_iteration_condition_block
+        old_current_iteration_end_block = self.current_iteration_end_block
+
         self.current_iteration_condition_block = basic_block_while_condition
         self.current_iteration_end_block = basic_block_end_while
 
@@ -221,6 +224,9 @@ class Emitter:
         with self.cfb.goto_block(basic_block_while_body):
             self.emit_compound_statement(while_statement.body)
             self.cfb.branch(basic_block_while_condition)
+
+        self.current_iteration_condition_block = old_current_iteration_condition_block
+        self.current_iteration_end_block = old_current_iteration_end_block
 
         # magic!!!
         term = basic_block_end_while.terminator
