@@ -6,6 +6,7 @@ the emitter job is to emit the ast code
 import enum
 import sic_node as node
 import llvmlite.ir as ir
+import llvmlite
 
 
 class StackPackage:
@@ -200,20 +201,28 @@ class Emitter:
 
     def emit_while_statement(self, while_statement: node.While) -> None:
         # inline while's block statement
-        while_statement_block: ir.Block = self.cfb.append_basic_block(name='while')
-
-        self.current_iteration_ir = while_statement_block
+        bbwhile = self.cfb.append_basic_block()
+        bbend = self.cfb.append_basic_block()
 
         ir_condition = self.emit_expression(while_statement.condition)
 
-        with self.cfb.goto_block(while_statement_block):
+        self.cfb.cbranch(ir_condition, bbwhile, bbend)
+
+        with self.cfb.goto_block(bbwhile):
+            # while body
             self.emit_compound_statement(while_statement.body)
 
-            self.cfb.cbranch(ir_condition, while_statement_block, self.cfb.block)
+            ir_condition = self.emit_expression(while_statement.condition)
 
-        self.cfb.cbranch(ir_condition, while_statement_block, self.cfb.block)
+            self.cfb.cbranch(ir_condition, bbwhile, bbend)
 
-        self.current_iteration_ir = None
+        term = bbend.is_terminated
+        if term is not None:
+            self.cfb.position_before(term)
+        else:
+            self.cfb.position_at_end(bbend)
+
+        ir_condition = self.emit_expression(while_statement.condition)
 
     def emit_for_statement(self, for_statement: node.For) -> None:
         # inline for's block statement
