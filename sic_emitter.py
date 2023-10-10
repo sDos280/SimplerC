@@ -222,8 +222,6 @@ class Emitter:
         else:
             self.cfb.position_at_end(bbend)
 
-        ir_condition = self.emit_expression(while_statement.condition)
-
     def emit_for_statement(self, for_statement: node.For) -> None:
         # inline for's block statement
         for_statement_block: ir.Block = self.cfb.append_basic_block(name='for')
