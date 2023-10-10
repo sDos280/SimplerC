@@ -202,7 +202,6 @@ class Emitter:
                     self.emit_compound_statement(if_statement.else_body)
 
     def emit_while_statement(self, while_statement: node.While) -> None:
-        # inline while's block statement
         basic_block_while_condition = self.cfb.append_basic_block()
         basic_block_while_body = self.cfb.append_basic_block()
         basic_block_end_while = self.cfb.append_basic_block()
@@ -235,25 +234,39 @@ class Emitter:
         self.current_iteration_end_block = None
 
     def emit_for_statement(self, for_statement: node.For) -> None:
-        # inline for's block statement
-        for_statement_block: ir.Block = self.cfb.append_basic_block(name='for')
+        basic_block_for_condition = self.cfb.append_basic_block()
+        basic_block_for_body = self.cfb.append_basic_block()
+        basic_block_end_for = self.cfb.append_basic_block()
 
-        self.current_iteration_condition_block = for_statement_block
+        self.current_iteration_condition_block = basic_block_for_condition
+        self.current_iteration_end_block = basic_block_end_for
 
+        # add initializer to the current block
         self.emit_expression(for_statement.init)
 
-        ir_condition = self.emit_expression(for_statement.condition)
+        # add first check of the condition to the current block
+        self.cfb.branch(basic_block_for_condition)
 
-        with self.cfb.goto_block(for_statement_block):
+        # emit condition block
+        with self.cfb.goto_block(basic_block_for_condition):
+            ir_condition = self.emit_expression(for_statement.condition)
+            self.cfb.cbranch(ir_condition, basic_block_for_body, basic_block_end_for)
+
+        # emit while body
+        with self.cfb.goto_block(basic_block_for_body):
             self.emit_compound_statement(for_statement.body)
+            self.cfb.branch(basic_block_for_condition)
 
-            self.emit_expression(for_statement.update)
+        # magic!!!
+        term = basic_block_end_for.terminator
+        if term is not None:
+            self.cfb.position_before(term)
+        else:
+            self.cfb.position_at_end(basic_block_end_for)
 
-            self.cfb.cbranch(ir_condition, for_statement_block, self.cfb.block)
-
-        self.cfb.cbranch(ir_condition, for_statement_block, self.cfb.block)
-
+        # reset iteration blocks
         self.current_iteration_condition_block = None
+        self.current_iteration_end_block = None
 
     def emit_compound_statement(self, compound_statement: node.CompoundStatement) -> None:
         # inline compound statement
