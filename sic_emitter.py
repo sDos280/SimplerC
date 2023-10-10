@@ -238,6 +238,9 @@ class Emitter:
         basic_block_for_body = self.cfb.append_basic_block()
         basic_block_end_for = self.cfb.append_basic_block()
 
+        old_current_iteration_condition_block = self.current_iteration_condition_block
+        old_current_iteration_end_block = self.current_iteration_end_block
+
         self.current_iteration_condition_block = basic_block_for_condition
         self.current_iteration_end_block = basic_block_end_for
 
@@ -256,6 +259,9 @@ class Emitter:
         with self.cfb.goto_block(basic_block_for_body):
             self.emit_compound_statement(for_statement.body)
             self.cfb.branch(basic_block_for_condition)
+
+        self.current_iteration_condition_block = old_current_iteration_condition_block
+        self.current_iteration_end_block = old_current_iteration_end_block
 
         # magic!!!
         term = basic_block_end_for.terminator
@@ -285,7 +291,10 @@ class Emitter:
 
     def emit_break_statement(self, break_statement: node.Break) -> None:
         # inline break statement
-        self.cfb.branch(self.cfb.block)
+        if self.current_iteration_end_block is None:
+            raise SyntaxError("break statement outside of iteration statement")
+
+        self.cfb.branch(self.current_iteration_end_block)
 
     def emit_continue_statement(self, continue_statement: node.Continue) -> None:
         # inline continue statement
