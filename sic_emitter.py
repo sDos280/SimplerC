@@ -27,7 +27,8 @@ class Emitter:
         self.module: ir.Module = ir.Module()
 
         self.current_function_ir: ir.Function | None = None
-        self.current_iteration_block: ir.Block | None = None
+        self.current_iteration_condition_block: ir.Block | None = None
+        self.current_iteration_condition_block: ir.Block | None = None
         self.current_iteration_end_block: ir.Block | None = None
 
         self.cfb: ir.IRBuilder | None = None  # current function builder
@@ -202,35 +203,42 @@ class Emitter:
 
     def emit_while_statement(self, while_statement: node.While) -> None:
         # inline while's block statement
-        basic_block_while = self.cfb.append_basic_block()
+        basic_block_while_condition = self.cfb.append_basic_block()
+        basic_block_while_body = self.cfb.append_basic_block()
         basic_block_end_while = self.cfb.append_basic_block()
 
-        self.current_iteration_block = basic_block_while
+        self.current_iteration_condition_block = basic_block_while_condition
         self.current_iteration_end_block = basic_block_end_while
 
-        ir_condition = self.emit_expression(while_statement.condition)
+        # add first check of the condition to the current block
+        self.cfb.branch(basic_block_while_condition)
 
-        self.cfb.cbranch(ir_condition, basic_block_while, basic_block_end_while)
-
-        with self.cfb.goto_block(basic_block_while):
-            # while body
-            self.emit_compound_statement(while_statement.body)
-
+        # emit condition block
+        with self.cfb.goto_block(basic_block_while_condition):
             ir_condition = self.emit_expression(while_statement.condition)
+            self.cfb.cbranch(ir_condition, basic_block_while_body, basic_block_end_while)
 
-            self.cfb.cbranch(ir_condition, basic_block_while, basic_block_end_while)
+        # emit while body
+        with self.cfb.goto_block(basic_block_while_body):
+            self.emit_compound_statement(while_statement.body)
+            self.cfb.branch(basic_block_while_condition)
 
-        term = basic_block_end_while.is_terminated
+        # magic!!!
+        term = basic_block_end_while.terminator
         if term is not None:
             self.cfb.position_before(term)
         else:
             self.cfb.position_at_end(basic_block_end_while)
 
+        # reset iteration blocks
+        self.current_iteration_condition_block = None
+        self.current_iteration_end_block = None
+
     def emit_for_statement(self, for_statement: node.For) -> None:
         # inline for's block statement
         for_statement_block: ir.Block = self.cfb.append_basic_block(name='for')
 
-        self.current_iteration_block = for_statement_block
+        self.current_iteration_condition_block = for_statement_block
 
         self.emit_expression(for_statement.init)
 
@@ -245,7 +253,7 @@ class Emitter:
 
         self.cfb.cbranch(ir_condition, for_statement_block, self.cfb.block)
 
-        self.current_iteration_block = None
+        self.current_iteration_condition_block = None
 
     def emit_compound_statement(self, compound_statement: node.CompoundStatement) -> None:
         # inline compound statement
@@ -268,7 +276,7 @@ class Emitter:
 
     def emit_continue_statement(self, continue_statement: node.Continue) -> None:
         # inline continue statement
-        self.cfb.branch(self.current_iteration_block)
+        self.cfb.branch(self.current_iteration_condition_block)
 
     def emit_statement(self, statement: node.StatementTypes) -> None:
         # inline statement
