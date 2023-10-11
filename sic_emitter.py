@@ -200,6 +200,13 @@ class Emitter:
                 with otherwise:
                     self.emit_compound_statement(if_statement.else_body)
 
+    def emit_ternary_expression(self, ternary_expression: node.CTernaryOp) -> ir.Value:
+        ir_condition = self.emit_expression(ternary_expression.condition)
+        ir_true_value = self.emit_expression(ternary_expression.true_value)
+        ir_false_value = self.emit_expression(ternary_expression.false_value)
+
+        return self.cfb.select(ir_condition, ir_true_value, ir_false_value)
+
     def emit_while_statement(self, while_statement: node.While) -> None:
         current_basic_block = self.cfb.basic_block
         basic_block_while_condition = self.cfb.append_basic_block(name=sic_utils.label_suffix(current_basic_block.name, '.while.condition'))
@@ -342,21 +349,7 @@ class Emitter:
         elif isinstance(expression, node.CCast):
             return self.emit_cast_expression(expression)
         elif isinstance(expression, node.CTernaryOp):
-            # a ternary operator is basically just an if statement
-            return self.emit_if_statement(
-                node.If(
-                    condition=expression.condition,
-                    body=node.CompoundStatement(
-                        declarations=[],
-                        statements=[expression.true_value]
-                    ),
-                    else_body=node.CompoundStatement(
-                        declarations=[],
-                        statements=[expression.false_value]
-                    )
-
-                )
-            )
+            return self.emit_ternary_expression(expression)
         elif isinstance(expression, node.FunctionCall):
             return self.emit_function_call(expression)
         elif isinstance(expression, node.CharLiteral):
