@@ -503,7 +503,7 @@ class Emitter:
                     case node.CPrimaryType.FLOAT:  # float to int
                         return self.cfb.fptosi(what_to_cast_ir, ir.IntType(32))
                     case node.CPrimaryType.DOUBLE:  # double to int
-                        raise SyntaxError("SimplerC : Type Error : cannot cast double to int")
+                        return self.cfb.fptosi(what_to_cast_ir, ir.IntType(32))
             case node.CPrimaryType.LONG:  # the default long type is signed long
                 match what_to_cast_type:
                     case node.CPrimaryType.CHAR:  # char to long
@@ -517,7 +517,7 @@ class Emitter:
                     case node.CPrimaryType.FLOAT:  # float to long
                         return self.cfb.fptosi(what_to_cast_ir, ir.IntType(64))
                     case node.CPrimaryType.DOUBLE:  # double to long
-                        raise SyntaxError("SimplerC : Type Error : cannot cast double to long")
+                        return self.cfb.fptosi(what_to_cast_ir, ir.IntType(64))
             case node.CPrimaryType.FLOAT:
                 match what_to_cast_type:
                     case node.CPrimaryType.CHAR:  # char to float
