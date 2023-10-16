@@ -271,8 +271,8 @@ class Emitter:
 
         # emit while body
         with self.cfb.goto_block(basic_block_for_body):
-            self.emit_expression(for_statement.update)
             self.emit_compound_statement(for_statement.body)
+            self.emit_expression(for_statement.update)
             self.cfb.branch(basic_block_for_condition)
 
         self.current_iteration_condition_block = old_current_iteration_condition_block
